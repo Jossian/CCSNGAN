@@ -28,20 +28,20 @@ noise_dim = 100
 num_classes = 3
 
 # Set directories for storing outputs
-output_dir = 'GAN_outputs/'
-monitor_dir = 'Monitor/'
-gan_exp_dir = 'GAN_experiments/Trained_CGANs/'
+output_dir = f'{ruta_proyecto}/GAN_outputs/'
+monitor_dir =f'{ruta_proyecto}/Monitor/'
+gan_exp_dir =f'{ruta_proyecto}/GAN_experiments/Trained_CGANs/'
 
-with open('data/data.pkl', 'rb') as f:
+with open(f'{ruta_proyecto}/data/data.pkl', 'rb') as f:
   data = pickle.load(f)
   
-with open('data/data_deriv.pkl', 'rb') as f:
+with open(f'{ruta_proyecto}/data/data_deriv.pkl', 'rb') as f:
   data_deriv = pickle.load(f)
 
-with open('data/data_deriv2.pkl', 'rb') as f:
+with open(f'{ruta_proyecto}/data/data_deriv2.pkl', 'rb') as f:
   data_deriv2 = pickle.load(f)
   
-with open('data/class_array.pkl', 'rb') as f:
+with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
   class_array = pickle.load(f)
 
 
