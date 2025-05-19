@@ -4,9 +4,17 @@ from tensorflow import keras
 from keras import layers
 from tensorflow.keras.optimizers import RMSprop
 import numpy as np
+import sys
+from pathlib import Path
+# Obtén la ruta del archivo actual
+ruta_actual = Path(__file__).resolve()
+ruta_proyecto = ruta_actual.parents[0]  # .parents[0] es el archivo mismo, .parents[1] es el padre, etc.
+if str(ruta_proyecto) not in sys.path:
+    sys.path.insert(0, str(ruta_proyecto))
 
-from gan_models import choose_gan
-from utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN
+
+from .gan_models import choose_gan
+from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN
 
 import pickle
 import json

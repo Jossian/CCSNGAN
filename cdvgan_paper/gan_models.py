@@ -3,8 +3,16 @@ import tensorflow as tf
 import keras
 from utils import calculate_derivative
 from tensorflow.keras.optimizers import RMSprop, Adam
-from model_components import *
-from utils import *
+
+import sys
+from pathlib import Path
+# Obtén la ruta del archivo actual
+ruta_actual = Path(__file__).resolve()
+ruta_proyecto = ruta_actual.parents[0]  # .parents[0] es el archivo mismo, .parents[1] es el padre, etc.
+if str(ruta_proyecto) not in sys.path:
+    sys.path.insert(0, str(ruta_proyecto))
+from .model_components import *
+from .utils import *
 
 class cWGAN(keras.Model):
     def __init__(
