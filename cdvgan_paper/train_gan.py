@@ -63,7 +63,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 512
-epochs = 100
+epochs = 10
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -103,12 +103,12 @@ json.dump(history_dict, open(output_path+'/history.json', 'w'))
 gan.generator.save(f'{gan_exp_dir}/{gan_choice.lower()}')
 
 # Save all components.
-gan.generator.save(output_path+'/Generator')
-gan.discriminator.save(output_path+'/Discriminator')
+gan.generator.save(output_path+'/Generator.keras')
+gan.discriminator.save(output_path+'/Discriminator.keras')
 if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
-    gan.deriv_discriminator.save(output_path+'/Deriv_Discriminator')
+    gan.deriv_discriminator.save(output_path+'/Deriv_Discriminator.keras')
     if gan_choice == 'DVGAN2':
-        gan.deriv2_discriminator.save(output_path+'/Deriv2_Discriminator')
+        gan.deriv2_discriminator.save(output_path+'/Deriv2_Discriminator.keras')
 
         
 
