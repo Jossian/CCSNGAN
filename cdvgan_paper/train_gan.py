@@ -46,7 +46,7 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
   class_array = pickle.load(f)
 """
 #------------------------------------------------------------------------------------
-data = np.loadtxt(f'{ruta_proyecto}/dataConditionalSignals.csv', delimiter=',')
+data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals.csv', delimiter=',')
 class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels.csv', delimiter=',')
 
 # Paso 1: calcular las derivadas si no las tienes
