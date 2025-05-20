@@ -63,7 +63,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 512
-epochs = 10
+epochs = 1
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -148,6 +148,8 @@ generations_uniform = gan.generator([latent_vectors_vertex, uniform_classes])
 generations_uniform = generations_uniform.numpy()
 
 vertex_classes = vertex_classes.numpy()
+simplex_classes = simplex_classes.numpy()
+uniform_classes = uniform_classes.numpy()
 
 # Plot some examples of generated data using different sampling methods.
 plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
