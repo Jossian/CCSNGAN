@@ -128,6 +128,7 @@ vertex_classes = tf.one_hot(indices, depth,
 random_ints = np.random.randint(0, 100, size=(num_signals,num_classes))
 
 simplex_classes = random_ints/np.sum(random_ints, axis=1).reshape(num_signals,1)
+simplex_classes = tf.convert_to_tensor(simplex_classes, dtype=tf.float32)
 
 uniform_classes = np.random.uniform(low=0.0, high=1.0, size=(num_signals,num_classes))
 
