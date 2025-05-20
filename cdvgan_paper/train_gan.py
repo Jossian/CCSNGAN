@@ -61,10 +61,10 @@ class_array = tf.one_hot(class_array, depth=3)
 #tf.cast(np.array(range(256)), tf.float32), fake_signals
 
 #x = np.arange(256)
-data_deriv = calculate_derivative(tf.cast(np.array(range(256)), tf.float32), data)
+data_deriv = calculate_derivative(tf.cast(np.array(range(256)), tf.float64), data)
 
 #x = np.arange(256)
-data_deriv2 = calculate_derivative(tf.cast(np.array(range(255)), tf.float32), data_deriv)
+data_deriv2 = calculate_derivative(tf.cast(np.array(range(255)), tf.float64), data_deriv)
 
 # Paso 2: empacar en el formato esperado
 #data = ([signals, derivatives, labels])
