@@ -28,11 +28,11 @@ noise_dim = 100
 num_classes = 3
 #-----------------------------------------------------------------------------------
 # Set directories for storing outputs
-"""
+
 output_dir = f'{ruta_proyecto}/GAN_outputs/'
 monitor_dir =f'{ruta_proyecto}/Monitor/'
 gan_exp_dir =f'{ruta_proyecto}/GAN_experiments/Trained_CGANs/'
-
+"""
 with open(f'{ruta_proyecto}/data/data.pkl', 'rb') as f:
   data = pickle.load(f)
   
@@ -82,7 +82,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 512
-epochs = 100
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
