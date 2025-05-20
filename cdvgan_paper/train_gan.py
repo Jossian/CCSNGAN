@@ -25,7 +25,7 @@ print(tf.config.list_physical_devices('GPU'))
 # Set parameters.
 sample_rate = 1024
 noise_dim = 100
-num_classes = 4
+num_classes = 3
 #-----------------------------------------------------------------------------------
 # Set directories for storing outputs
 
@@ -48,6 +48,11 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 #------------------------------------------------------------------------------------
 data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals.csv', delimiter=',')
 class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels.csv', delimiter=',')
+
+
+mask = class_array != 0
+data = data[mask]
+class_array = class_array[mask]
 
 class_array = tf.one_hot(class_array, depth=3)
 # Paso 1: calcular las derivadas si no las tienes
