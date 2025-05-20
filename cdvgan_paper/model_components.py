@@ -29,14 +29,7 @@ def conv_block(
 
 def get_discriminator_model(in_shape=256, num_classes=3, print_summary=False):
     img_input = layers.Input(shape=(in_shape,))
-    class_input = layers.Input(shape=(None,))
-    
- # Aseguramos que la entrada sea de forma (batch_size, num_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), num_classes),
-        lambda: x
-    ), output_shape=(num_classes,))(class_input)  # Added output_shape parameter here
+    class_input = layers.Input(shape=(num_classes,))
     # Redimensionando para trabajar con señales de 256
     # Cambiamos a 32x8 para mantener una relación similar
     x = layers.Reshape((32, 8))(img_input)
@@ -88,11 +81,10 @@ def get_discriminator_model(in_shape=256, num_classes=3, print_summary=False):
     x = layers.GlobalAveragePooling1D()(x)
     x = layers.Dense(128, use_bias=False)(x)
     
-    # Usamos class_embedding en lugar de procesar class_input de nuevo
-    class_ind = Lambda(lambda x: K.argmax(x, axis=-1))(class_embedding)
-    class_emb = layers.Embedding(num_classes, 128)(class_ind)
+    class_ind = Lambda(lambda x: K.argmax(x, axis=-1))(class_input)
+    class_embedding = layers.Embedding(num_classes, 128)(class_ind)
 
-    dot_product = Lambda(lambda inputs: tf.reduce_sum(tf.multiply(inputs[0], inputs[1]), axis=1, keepdims=True))([x, class_emb])
+    dot_product = Lambda(lambda inputs: tf.reduce_sum(tf.multiply(inputs[0], inputs[1]), axis=1, keepdims=True))([x, class_embedding])
 
     scalar_function = layers.Dense(1, use_bias=False)(x)
 
@@ -106,15 +98,7 @@ def get_discriminator_model(in_shape=256, num_classes=3, print_summary=False):
 
 def get_derivative_discriminator_model(in_shape=255, num_classes=3, print_summary=False):
     img_input = layers.Input(shape=(in_shape,))
-    class_input = layers.Input(shape=(None,))
-    
-    # Aseguramos que la entrada sea de forma (batch_size, num_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), num_classes),
-        lambda: x
-       ), output_shape=(num_classes,))(class_input)
-    
+    class_input = layers.Input(shape=(num_classes,))
     x = layers.Dense(256)(img_input)  # Reducido de 512 a 256
     x = layers.LeakyReLU()(x)
     x = layers.Reshape((16, 16))(x)  # Ajustado de (32,16) a (16,16)
@@ -154,12 +138,10 @@ def get_derivative_discriminator_model(in_shape=255, num_classes=3, print_summar
 
     x = layers.GlobalAveragePooling1D()(x)
     x = layers.Dense(128, use_bias=False)(x)
-    
-    # Usamos class_embedding en lugar de procesar class_input de nuevo
-    class_ind = Lambda(lambda x: K.argmax(x, axis=-1))(class_embedding)
-    class_emb = layers.Embedding(num_classes, 128)(class_ind)
+    class_ind = Lambda(lambda x: K.argmax(x, axis=-1))(class_input)
+    class_embedding = layers.Embedding(num_classes, 128)(class_ind)
 
-    dot_product = Lambda(lambda inputs: tf.reduce_sum(tf.multiply(inputs[0], inputs[1]), axis=1, keepdims=True))([x, class_emb])
+    dot_product = Lambda(lambda inputs: tf.reduce_sum(tf.multiply(inputs[0], inputs[1]), axis=1, keepdims=True))([x, class_embedding])
 
     scalar_function = layers.Dense(1, use_bias=False)(x)
 
@@ -173,15 +155,7 @@ def get_derivative_discriminator_model(in_shape=255, num_classes=3, print_summar
 
 def get_second_derivative_discriminator_model(in_shape=254, num_classes=3, print_summary=False):
     img_input = layers.Input(shape=(in_shape,))
-    class_input = layers.Input(shape=(None,))
-    
-    # Aseguramos que la entrada sea de forma (batch_size, num_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), num_classes),
-        lambda: x
-       ), output_shape=(num_classes,))(class_input) 
-    
+    class_input = layers.Input(shape=(num_classes,))
     x = layers.Dense(256)(img_input)  # Reducido de 512 a 256
     x = layers.LeakyReLU()(x)
     x = layers.Reshape((16, 16))(x)  # Ajustado de (32,16) a (16,16)
@@ -265,16 +239,9 @@ def upsample_block(
 
 def get_generator_model(noise_dim=100, num_classes=3, print_summary=False):
     noise = layers.Input(shape=(noise_dim,))
-    # Cambiando la entrada de clase para aceptar tanto enteros como one-hot
-    class_input = layers.Input(shape=(None,))
-    # Aseguramos que la entrada sea de forma (batch_size, num_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), num_classes),
-        lambda: x
-        ), output_shape=(num_classes,))(class_input) 
-    class_features = layers.Dense(32, use_bias=False)(class_embedding)
-    combined_input = layers.Concatenate()([noise, class_features])
+    class_input = layers.Input(shape=(num_classes,))
+    class_embedding = layers.Dense(32, use_bias=False)(class_input)
+    combined_input = layers.Concatenate()([noise, class_embedding])
     x = layers.Dense(256, use_bias=False)(combined_input)  # Reducido de 1024 a 256
     x = layers.ReLU()(x)
 
@@ -329,18 +296,10 @@ def get_generator_model(noise_dim=100, num_classes=3, print_summary=False):
 
 def get_discriminator_model_mc(in_shape=256, n_classes=3, print_summary=False):
     # Label input
-    in_label = layers.Input(shape=(None,))
-    
-    # Aseguramos que la entrada sea de forma (batch_size, n_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), n_classes),
-        lambda: x
-    ), output_shape=(n_classes,))(in_label) 
-    
+    in_label = layers.Input(shape=(n_classes,))
     # Scale up to image dim with linear activation
     n_nodes = in_shape
-    li = layers.Dense(n_nodes)(class_embedding)
+    li = layers.Dense(n_nodes)(in_label)
     # Reshape to additional channel
     li = layers.Reshape((in_shape, 1))(li)
     # Image input
@@ -374,18 +333,10 @@ def get_discriminator_model_mc(in_shape=256, n_classes=3, print_summary=False):
 
 def get_derivative_discriminator_model_mc(in_shape=255, n_classes=3, print_summary=False):
     # Label input
-    in_label = layers.Input(shape=(None,))
-    
-    # Aseguramos que la entrada sea de forma (batch_size, n_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), n_classes),
-        lambda: x
-    ), output_shape=(n_classes,))(in_label) 
-    
+    in_label = layers.Input(shape=(n_classes,))
     # Scale up to image dim with linear activation
     n_nodes = in_shape
-    li = layers.Dense(n_nodes)(class_embedding)
+    li = layers.Dense(n_nodes)(in_label)
     # Reshape to additional channel
     li = layers.Reshape((in_shape, 1))(li)
     # Image input
@@ -420,16 +371,9 @@ def get_derivative_discriminator_model_mc(in_shape=255, n_classes=3, print_summa
 def get_generator_model_mc(latent_dim=100, n_classes=3, print_summary=False):
     # Image input
     in_lat = layers.Input(shape=(latent_dim,))
-    in_label = layers.Input(shape=(None,))
-    
-    # Aseguramos que la entrada sea de forma (batch_size, n_classes)
-    class_embedding = layers.Lambda(lambda x: tf.cond(
-        tf.equal(tf.rank(x), 1),
-        lambda: tf.one_hot(tf.cast(x, tf.int32), n_classes),
-        lambda: x
-    ), output_shape=(n_classes,))(in_label)
+    in_label = layers.Input(shape=(n_classes,))
 
-    x = layers.Concatenate()([in_lat, class_embedding])
+    x = layers.Concatenate()([in_lat, in_label])
 
     n_nodes = 32 * 256  # Ajustado para generar 256 puntos
     merge = layers.Dense(n_nodes)(x)
@@ -454,3 +398,4 @@ def get_generator_model_mc(latent_dim=100, n_classes=3, print_summary=False):
     if print_summary:
         print(model.summary())
     return model
+
