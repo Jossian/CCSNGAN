@@ -58,14 +58,13 @@ class_array = tf.one_hot(class_array, depth=3)
 #print("class_array shape: ", class_array.shape)
 
 # Paso 1: calcular las derivadas si no las tienes
-def calculate_derivative(x, y):
-    return np.gradient(y, x, axis=1)
+#tf.cast(np.array(range(256)), tf.float32), fake_signals
 
-x = np.arange(256)
-data_deriv = calculate_derivative(x, data)
+#x = np.arange(256)
+data_deriv = calculate_derivative(tf.cast(np.array(range(256)), tf.float32), data)
 
-x = np.arange(256)
-data_deriv2 = calculate_derivative(x, data_deriv)
+#x = np.arange(256)
+data_deriv2 = calculate_derivative(tf.cast(np.array(range(255)), tf.float32), data_deriv)
 
 # Paso 2: empacar en el formato esperado
 #data = ([signals, derivatives, labels])
