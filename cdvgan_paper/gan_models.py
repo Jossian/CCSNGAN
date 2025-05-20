@@ -229,6 +229,8 @@ class cDVGAN(keras.Model):
                 # fake_signals = tf.cast(fake_signals, dtype=tf.float32)
                 
                 fake_derivatives = calculate_derivative(tf.cast(np.array(range(256)), tf.float32), fake_signals)
+                tf.print("Shape of fake_derivatives:", tf.shape(fake_derivatives))
+
                 # fake_derivatives = tf.cast(fake_derivatives, dtype=tf.float32)
      
                 # Get the logits for the fake signals

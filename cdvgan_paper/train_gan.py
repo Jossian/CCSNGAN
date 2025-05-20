@@ -55,6 +55,8 @@ data = data[mask]
 class_array = class_array[mask]
 
 class_array = tf.one_hot(class_array, depth=3)
+#print("class_array shape: ", class_array.shape)
+
 # Paso 1: calcular las derivadas si no las tienes
 def calculate_derivative(x, y):
     return np.gradient(y, x, axis=1)
