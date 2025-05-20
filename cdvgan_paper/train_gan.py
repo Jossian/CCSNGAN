@@ -61,10 +61,10 @@ class_array = tf.one_hot(class_array, depth=3)
 def calculate_derivative(x, y):
     return np.gradient(y, x, axis=1)
 
-x = np.arange(255)
+x = np.arange(256)
 data_deriv = calculate_derivative(x, data)
 
-x = np.arange(254)
+x = np.arange(256)
 data_deriv2 = calculate_derivative(x, data_deriv)
 
 # Paso 2: empacar en el formato esperado
@@ -84,7 +84,7 @@ gan_choice = gan_choice_dict[gan_choice_int]
 signal_length = data.shape[-1]
 deriv_signal_length = data_deriv.shape[-1]
 deriv2_signal_length = data_deriv2.shape[-1]
-
+print("deriv_signal_length: ",deriv_signal_length)
 # Create and compile GAN model
 gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_length, num_classes, noise_dim)
 
