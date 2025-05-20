@@ -26,8 +26,9 @@ print(tf.config.list_physical_devices('GPU'))
 sample_rate = 1024
 noise_dim = 100
 num_classes = 3
-
+#-----------------------------------------------------------------------------------
 # Set directories for storing outputs
+"""
 output_dir = f'{ruta_proyecto}/GAN_outputs/'
 monitor_dir =f'{ruta_proyecto}/Monitor/'
 gan_exp_dir =f'{ruta_proyecto}/GAN_experiments/Trained_CGANs/'
@@ -43,8 +44,26 @@ with open(f'{ruta_proyecto}/data/data_deriv2.pkl', 'rb') as f:
   
 with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
   class_array = pickle.load(f)
+"""
+#------------------------------------------------------------------------------------
+data = np.loadtxt("ConditionalSignals.csv", delimiter=',')
+class_array = np.loadtxt("ConditionalLabels.csv", delimiter=',')
+
+# Paso 1: calcular las derivadas si no las tienes
+def calculate_derivative(x, y):
+    return np.gradient(y, x, axis=1)
+
+x = np.arange(256)
+data_deriv = calculate_derivative(x, data)
+
+x = np.arange(256)
+data_deriv2 = calculate_derivative(x, data_deriv)
+
+# Paso 2: empacar en el formato esperado
+#data = ([signals, derivatives, labels])
 
 
+#------------------------------------------------------------------------------------
 gan_choice_dict = {1:'cWGAN',
                   2:'cDVGAN',
                   3:'cDVGAN2',
