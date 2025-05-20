@@ -61,10 +61,10 @@ class_array = tf.one_hot(class_array, depth=3)
 def calculate_derivative(x, y):
     return np.gradient(y, x, axis=1)
 
-x = np.arange(256)
+x = np.arange(255)
 data_deriv = calculate_derivative(x, data)
 
-x = np.arange(256)
+x = np.arange(254)
 data_deriv2 = calculate_derivative(x, data_deriv)
 
 # Paso 2: empacar en el formato esperado
