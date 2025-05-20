@@ -100,7 +100,7 @@ history_dict = history.history
 json.dump(history_dict, open(output_path+'/history.json', 'w'))
 
 # Save the generator for experiments.
-gan.generator.save(f'{gan_exp_dir}/{gan_choice.lower()}')
+gan.generator.save(f'{gan_exp_dir}/{gan_choice.lower()}.keras')
 
 # Save all components.
 gan.generator.save(output_path+'/Generator.keras')
