@@ -154,6 +154,7 @@ indices = tf.experimental.numpy.random.randint(
         size=[num_signals])
 depth = num_classes
 
+indices = np.argsort(indices)
 vertex_classes = tf.one_hot(indices, depth,
           on_value=1.0, off_value=0.0,
           axis=-1)
