@@ -214,46 +214,46 @@ def f1_m(y_true, y_pred):
 
 
 
-def compare_signal_datasets(df_original: pd.DataFrame, df_augmented: pd.DataFrame, show_plots=True, max_pairs=1600):
+def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray, show_plots=True, max_pairs=1600):
     """
     Compara dos datasets de señales (original vs. aumentado), aunque tengan distinto número de filas.
     Cada fila debe ser una señal temporal (por ejemplo, 256 columnas).
-    
+
     Parámetros:
-    - df_original: señales originales (n muestras x t puntos)
-    - df_augmented: señales aumentadas
+    - arr_original: señales originales (n muestras x t puntos)
+    - arr_augmented: señales aumentadas
     - show_plots: si se deben mostrar los gráficos
     - max_pairs: número de pares aleatorios para calcular cross-correlation
-    
+
     Retorna:
     - Diccionario con estadísticas y métricas de comparación.
     """
 
-    assert df_original.shape[1] == df_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
-    print(f"🔎 Comparando {len(df_original)} señales originales con {len(df_augmented)} aumentadas...")
+    assert arr_original.shape[1] == arr_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
+    print(f"🔎 Comparando {len(arr_original)} señales originales con {len(arr_augmented)} aumentadas...")
 
     # Calcular estadísticas descriptivas por señal
-    def compute_stats(df):
-        return pd.DataFrame({
-            "mean": df.mean(axis=1),
-            "std": df.std(axis=1),
-            "skewness": df.apply(skew, axis=1),
-            "kurtosis": df.apply(kurtosis, axis=1)
-        })
+    def compute_stats(arr):
+        return {
+            "mean": np.mean(arr, axis=1),
+            "std": np.std(arr, axis=1),
+            "skewness": skew(arr, axis=1),
+            "kurtosis": kurtosis(arr, axis=1)
+        }
 
-    stats_orig = compute_stats(df_original)
-    stats_aug = compute_stats(df_augmented)
+    stats_orig = compute_stats(arr_original)
+    stats_aug = compute_stats(arr_augmented)
 
     print("\n📊 Estadísticas descriptivas:")
-    for col in stats_orig.columns:
-        print(f"\n🔹 {col.upper()}")
-        print(f" - Original:  mean={stats_orig[col].mean():.4f}, std={stats_orig[col].std():.4f}")
-        print(f" - Aumentado: mean={stats_aug[col].mean():.4f}, std={stats_aug[col].std():.4f}")
+    for key in stats_orig:
+        print(f"\n🔹 {key.upper()}")
+        print(f" - Original:  mean={np.mean(stats_orig[key]):.4f}, std={np.std(stats_orig[key]):.4f}")
+        print(f" - Aumentado: mean={np.mean(stats_aug[key]):.4f}, std={np.std(stats_aug[key]):.4f}")
 
     # Kolmogorov-Smirnov por punto temporal
     ks_pvalues = []
-    for t in range(df_original.shape[1]):
-        stat, pval = ks_2samp(df_original.iloc[:, t], df_augmented.iloc[:, t])
+    for t in range(arr_original.shape[1]):
+        stat, pval = ks_2samp(arr_original[:, t], arr_augmented[:, t])
         ks_pvalues.append(pval)
 
     avg_pval = np.mean(ks_pvalues)
@@ -269,12 +269,12 @@ def compare_signal_datasets(df_original: pd.DataFrame, df_augmented: pd.DataFram
         y = (y - np.mean(y)) / np.std(y)
         return np.max(correlate(x, y, mode='full')) / len(x)
 
-    n_pairs = min(max_pairs, len(df_original), len(df_augmented))
-    idx_orig = random.sample(range(len(df_original)), n_pairs)
-    idx_aug = random.sample(range(len(df_augmented)), n_pairs)
+    n_pairs = min(max_pairs, len(arr_original), len(arr_augmented))
+    idx_orig = random.sample(range(len(arr_original)), n_pairs)
+    idx_aug = random.sample(range(len(arr_augmented)), n_pairs)
 
     xcorr_vals = [
-        normalized_xcorr(df_original.iloc[i], df_augmented.iloc[j])
+        normalized_xcorr(arr_original[i], arr_augmented[j])
         for i, j in zip(idx_orig, idx_aug)
     ]
     print(f"\n🔗 Cross-correlation promedio (sobre {n_pairs} pares aleatorios): {np.mean(xcorr_vals):.4f}")
