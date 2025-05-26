@@ -96,7 +96,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 512
-epochs = 400
+epochs = 5  
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -147,9 +147,9 @@ if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
 
 
 # Generate signals. We will sample the class space in three different ways; vertex, simplex and uniform sampling
-num_signals = 10
+num_signals = 9
 indices = tf.experimental.numpy.random.randint(
-        0,
+        1,
         high=num_classes,
         size=[num_signals])
 depth = num_classes
@@ -184,6 +184,7 @@ vertex_classes = vertex_classes.numpy()
 simplex_classes = simplex_classes.numpy()
 uniform_classes = uniform_classes.numpy()
 
+print("vertex classes: ", vertex_classes)
 # Plot some examples of generated data using different sampling methods.
 plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
 plot_examples(generations_simplex, simplex_classes, output_path+'/Simplex_examples')
