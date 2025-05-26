@@ -93,8 +93,9 @@ def plot_examples(data, classes, path):
         ax.set_title(", ".join(f"{x:.3f}" for x in classes[i]))
         #ax.set_title(classes[i].round(3))
         plt.subplots_adjust(hspace=0.4)
-
+    plt.show()
     plt.savefig(path)
+
     plt.close()
 
     
