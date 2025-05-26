@@ -14,7 +14,7 @@ if str(ruta_proyecto) not in sys.path:
 
 
 from .gan_models import choose_gan
-from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN
+from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN, compare_signal_datasets
 
 import pickle
 import json
@@ -46,13 +46,20 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
   class_array = pickle.load(f)
 """
 #------------------------------------------------------------------------------------
-data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals.csv', delimiter=',')
-class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels.csv', delimiter=',')
+data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug.csv', delimiter=',')
+class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug.csv', delimiter=',')
 
+data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig.csv', delimiter=',')
+class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig.csv', delimiter=',')
 
+class_array+=1
 mask = class_array != 0
 data = data[mask]
 class_array = class_array[mask]
+
+metrics=compare_signal_datasets(data, data_orig)
+
+
 
 class_array = tf.one_hot(class_array, depth=3)
 #print("class_array shape: ", class_array.shape)
@@ -184,3 +191,4 @@ plot_examples(generations_uniform, uniform_classes, output_path+'/Uniform_exampl
 
 
 print('Training Completed!')
+

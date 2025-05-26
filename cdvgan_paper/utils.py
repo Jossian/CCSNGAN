@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 import keras
 from keras import backend as K
 import os
+import pandas as pd
+import numpy as np
+from scipy.stats import skew, kurtosis, ks_2samp
+from scipy.signal import correlate
+import matplotlib.pyplot as plt
+import random
 
 # Define the loss function for the discriminators,
 # which should be (fake_loss - real_loss).
@@ -207,3 +213,97 @@ def f1_m(y_true, y_pred):
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
 
+
+def compare_signal_datasets(df_original: pd.DataFrame, df_augmented: pd.DataFrame, show_plots=True, max_pairs=1600):
+    """
+    Compara dos datasets de señales (original vs. aumentado), aunque tengan distinto número de filas.
+    Cada fila debe ser una señal temporal (por ejemplo, 256 columnas).
+    
+    Parámetros:
+    - df_original: señales originales (n muestras x t puntos)
+    - df_augmented: señales aumentadas
+    - show_plots: si se deben mostrar los gráficos
+    - max_pairs: número de pares aleatorios para calcular cross-correlation
+    
+    Retorna:
+    - Diccionario con estadísticas y métricas de comparación.
+    """
+
+    assert df_original.shape[1] == df_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
+    print(f"🔎 Comparando {len(df_original)} señales originales con {len(df_augmented)} aumentadas...")
+
+    # Calcular estadísticas descriptivas por señal
+    def compute_stats(df):
+        return pd.DataFrame({
+            "mean": df.mean(axis=1),
+            "std": df.std(axis=1),
+            "skewness": df.apply(skew, axis=1),
+            "kurtosis": df.apply(kurtosis, axis=1)
+        })
+
+    stats_orig = compute_stats(df_original)
+    stats_aug = compute_stats(df_augmented)
+
+    print("\n📊 Estadísticas descriptivas:")
+    for col in stats_orig.columns:
+        print(f"\n🔹 {col.upper()}")
+        print(f" - Original:  mean={stats_orig[col].mean():.4f}, std={stats_orig[col].std():.4f}")
+        print(f" - Aumentado: mean={stats_aug[col].mean():.4f}, std={stats_aug[col].std():.4f}")
+
+    # Kolmogorov-Smirnov por punto temporal
+    ks_pvalues = []
+    for t in range(df_original.shape[1]):
+        stat, pval = ks_2samp(df_original.iloc[:, t], df_augmented.iloc[:, t])
+        ks_pvalues.append(pval)
+
+    avg_pval = np.mean(ks_pvalues)
+    print(f"\n📈 Test de Kolmogorov-Smirnov promedio (por punto temporal): p = {avg_pval:.4f}")
+    if avg_pval < 0.05:
+        print("⚠️ Las distribuciones son significativamente diferentes en promedio (p < 0.05).")
+    else:
+        print("✅ Las distribuciones no son significativamente diferentes en promedio.")
+
+    # Cross-correlation entre señales emparejadas aleatoriamente
+    def normalized_xcorr(x, y):
+        x = (x - np.mean(x)) / np.std(x)
+        y = (y - np.mean(y)) / np.std(y)
+        return np.max(correlate(x, y, mode='full')) / len(x)
+
+    n_pairs = min(max_pairs, len(df_original), len(df_augmented))
+    idx_orig = random.sample(range(len(df_original)), n_pairs)
+    idx_aug = random.sample(range(len(df_augmented)), n_pairs)
+
+    xcorr_vals = [
+        normalized_xcorr(df_original.iloc[i], df_augmented.iloc[j])
+        for i, j in zip(idx_orig, idx_aug)
+    ]
+    print(f"\n🔗 Cross-correlation promedio (sobre {n_pairs} pares aleatorios): {np.mean(xcorr_vals):.4f}")
+
+    # Visualización
+    if show_plots:
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+        axs = axs.ravel()
+
+        axs[0].boxplot([stats_orig['mean'], stats_aug['mean']], labels=['Original', 'Aumentado'])
+        axs[0].set_title("Media de señales")
+
+        axs[1].boxplot([stats_orig['std'], stats_aug['std']], labels=['Original', 'Aumentado'])
+        axs[1].set_title("Desviación estándar")
+
+        axs[2].boxplot([stats_orig['skewness'], stats_aug['skewness']], labels=['Original', 'Aumentado'])
+        axs[2].set_title("Asimetría (Skewness)")
+
+        axs[3].hist(xcorr_vals, bins=20, color='skyblue', edgecolor='k')
+        axs[3].set_title("Distribución de Cross-Correlation")
+
+        plt.tight_layout()
+        plt.show()
+
+    return {
+        "stats_original": stats_orig,
+        "stats_augmented": stats_aug,
+        "ks_pvalues": ks_pvalues,
+        "ks_pval_mean": avg_pval,
+        "xcorr_values": xcorr_vals,
+        "xcorr_mean": np.mean(xcorr_vals)
+    }
