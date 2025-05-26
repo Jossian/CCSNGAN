@@ -148,13 +148,13 @@ if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
 
 # Generate signals. We will sample the class space in three different ways; vertex, simplex and uniform sampling
 num_signals = 9
-indices = tf.experimental.numpy.random.randint(
-        1,
+'''indices = tf.experimental.numpy.random.randint(
+        0,
         high=num_classes,
-        size=[num_signals])
+        size=[num_signals])'''
 depth = num_classes
 
-indices = np.argsort(indices)
+indices = np.array([1,1,1,2,2,2,3,3,3])
 vertex_classes = tf.one_hot(indices, depth,
           on_value=1.0, off_value=0.0,
           axis=-1)
