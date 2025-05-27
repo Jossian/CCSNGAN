@@ -90,6 +90,8 @@ def plot_examples(data, classes, path):
         ax.plot(data[i])
         #print("classes: ",classes[i])
         #ax.set_title(str(classes[i].round(3)))
+        ax.set_ylim(-13, 7)  # Fijar el mismo rango Y para todos los subplots
+
         ax.set_title(", ".join(f"{x:.3f}" for x in classes[i]))
         #ax.set_title(classes[i].round(3))
         plt.subplots_adjust(hspace=0.4)
