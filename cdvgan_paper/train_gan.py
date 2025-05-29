@@ -57,10 +57,10 @@ mask = class_array != 0
 data = data[mask]
 class_array = class_array[mask]
 
-unique,counts=np.unique(class_array = class_array[mask]
-, return_counts=True)
+unique,counts=np.unique(class_array, return_counts=True)
 print("Classes, counts: ")
 print(np.asarray((unique, counts)).T)
+print("counts: ", counts)
 
 metrics=compare_signal_datasets(data, data_orig)
 
@@ -201,14 +201,32 @@ print('Training Completed!')
 
 print("Generating datasets to consistency test ...")
 
-samples_per_class = 1000
+#samples_per_class = 1000
 # Crear etiquetas como números enteros: 0, 1, 2 repetidos 1000 veces cada uno
-labels = np.repeat(np.arange(num_classes), samples_per_class)
+#labels = np.repeat(np.arange(num_classes), samples_per_class)
 # Convertir a one-hot encoding
-vertex_classes_datasets = np.eye(num_classes)[labels]
+#vertex_classes_datasets = np.eye(num_classes)[labels]
 
-print(vertex_classes_datasets.shape)  # (3000, 3)
-num_signals_datasets=3000
+#print(vertex_classes_datasets.shape)  # (3000, 3)
+#num_signals_datasets=3000
+
+
+"""
+
+# Especificar el número de muestras por clase (por ejemplo: clase 0: 800, clase 1: 1200, clase 2: 500)
+samples_per_class = [800, 1200, 500]
+num_signals_datasets = len(samples_per_class)
+
+# Crear etiquetas de clase
+labels = np.concatenate([
+    np.full(n, class_idx) for class_idx, n in enumerate(samples_per_class)
+])
+
+# Convertir a one-hot encoding
+vertex_classes_datasets = np.eye(num_signals_datasets)[labels]
+
+
+
 latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
 generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes_datasets])
-generations_vertex = generations_vertex.numpy()
+generations_vertex = generations_vertex.numpy()"""
