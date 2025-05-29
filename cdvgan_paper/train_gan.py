@@ -222,9 +222,17 @@ labels = np.concatenate([
     np.full(n, class_idx) for class_idx, n in enumerate(counts)
 ])
 
-# Convertir a one-hot encoding
-vertex_classes_datasets = np.eye(num_signals_datasets)[labels]
+unique,counts=np.unique(labels, return_counts=True)
+print("Classes, counts: ")
+print(np.asarray((unique, counts)).T)
+print("counts: ", counts)
 
+# Convertir a one-hot encoding
+#vertex_classes_datasets = np.eye(num_signals_datasets)[labels]
+
+vertex_classes_datasets = tf.one_hot(labels, depth,
+          on_value=1.0, off_value=0.0,
+          axis=-1)
 
 
 latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
