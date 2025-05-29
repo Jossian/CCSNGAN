@@ -15,7 +15,7 @@ if str(ruta_proyecto) not in sys.path:
 
 from .gan_models import choose_gan
 from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN, compare_signal_datasets
-
+from .consistency_test import consistency_test
 import pickle
 import json
 import os
@@ -239,3 +239,5 @@ latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim)
 generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes_datasets])
 generations_vertex = generations_vertex.numpy()
 print("lenght generations: ", generations_vertex.shape)
+
+consistency_test(data_orig, class_array_orig, generations_vertex, labels)

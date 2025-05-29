@@ -5,10 +5,7 @@ from scipy.stats import wasserstein_distance
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import correlate
 
-# ---- CONFIGURACIÓN ----
-np.random.seed(42)
-N = 300  # muestras por clase
-classes = ['class_0', 'class_1', 'class_2']
+
 
 # Simulación de poblaciones (real vs artificial) para cada clase
 def simulate_blips(n, dim=50):
@@ -73,32 +70,40 @@ def plot_similarity_metric(metric_name, xlabel, ylabel, invert=False):
 #plot_similarity_metric('crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
 
 
-# Re-run simulation with faster method
-results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
-real_class_sizes = {'class_0': 1000, 'class_1': 300, 'class_2': 100}
+def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
+    _,counts=np.unique(label_orig, return_counts=True)
+    # ---- CONFIGURACIÓN ----
+    np.random.seed(42)
+    #N = 300  # muestras por clase
+    classes = ['class_0', 'class_1', 'class_2']
+    # Re-run simulation with faster method
+    results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
+    real_class_sizes = {'class_0': counts[0], 'class_1': counts[1], 'class_2': counts[2]}
 
-for class_label in classes:
-    N_real = real_class_sizes[class_label]
-    B_F = simulate_blips(N)  # artificial population
-    B_R = simulate_blips(N)  # real population
+    for class_label in classes:
+        N_real = real_class_sizes[class_label]
+        B_F=dataset_gen
+        B_R=dataset_orig
+        #B_F = simulate_blips(N)  # artificial population
+        #B_R = simulate_blips(N)  # real population
 
-    for i in range(N):
-        bF = B_F[i]
-        x_w, _ = compute_similarity_fast(bF, B_F, 'wasserstein')
-        y_w, _ = compute_similarity_fast(bF, B_R, 'wasserstein')
+        for i in range(N_real):
+            bF = B_F[i]
+            x_w, _ = compute_similarity_fast(bF, B_F, 'wasserstein')
+            y_w, _ = compute_similarity_fast(bF, B_R, 'wasserstein')
 
-        x_m, _ = compute_similarity_fast(bF, B_F, 'match')
-        y_m, _ = compute_similarity_fast(bF, B_R, 'match')
+            x_m, _ = compute_similarity_fast(bF, B_F, 'match')
+            y_m, _ = compute_similarity_fast(bF, B_R, 'match')
 
-        x_k, _ = compute_similarity_fast(bF, B_F, 'crosscov')
-        y_k, _ = compute_similarity_fast(bF, B_R, 'crosscov')
+            x_k, _ = compute_similarity_fast(bF, B_F, 'crosscov')
+            y_k, _ = compute_similarity_fast(bF, B_R, 'crosscov')
 
-        for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
-            results[metric]['x'].append(x)
-            results[metric]['y'].append(y)
-            results[metric]['label'].append(class_label)
+            for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
+                results[metric]['x'].append(x)
+                results[metric]['y'].append(y)
+                results[metric]['label'].append(class_label)
 
-# Plot all metrics again
-plot_similarity_metric('wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
-plot_similarity_metric('match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
-plot_similarity_metric('crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
+    # Plot all metrics again
+    plot_similarity_metric('wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
+    plot_similarity_metric('match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
+    plot_similarity_metric('crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
