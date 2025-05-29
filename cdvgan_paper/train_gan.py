@@ -194,3 +194,16 @@ plot_examples(generations_uniform, uniform_classes, output_path+'/Uniform_exampl
 
 print('Training Completed!')
 
+print("Generating datasets to consistency test ...")
+
+samples_per_class = 1000
+# Crear etiquetas como números enteros: 0, 1, 2 repetidos 1000 veces cada uno
+labels = np.repeat(np.arange(num_classes), samples_per_class)
+# Convertir a one-hot encoding
+vertex_classes_datasets = np.eye(num_classes)[labels]
+
+print(vertex_classes_datasets.shape)  # (3000, 3)
+num_signals_datasets=3000
+latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
+generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes_datasets])
+generations_vertex = generations_vertex.numpy()
