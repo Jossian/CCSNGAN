@@ -215,7 +215,7 @@ print("Generating datasets to consistency test ...")
 
 # Especificar el número de muestras por clase (por ejemplo: clase 0: 800, clase 1: 1200, clase 2: 500)
 #samples_per_class = [800, 1200, 500]
-num_signals_datasets = len(counts)
+num_signals_datasets = np.sum(counts)
 
 # Crear etiquetas de clase
 labels = np.concatenate([
