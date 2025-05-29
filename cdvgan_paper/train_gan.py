@@ -57,6 +57,11 @@ mask = class_array != 0
 data = data[mask]
 class_array = class_array[mask]
 
+unique,counts=np.unique(class_array = class_array[mask]
+, return_counts=True)
+print("Classes, counts: ")
+print(np.asarray((unique, counts)).T)
+
 metrics=compare_signal_datasets(data, data_orig)
 
 

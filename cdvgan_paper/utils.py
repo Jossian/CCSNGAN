@@ -234,10 +234,8 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
 
     assert arr_original.shape[1] == arr_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
     print(f"🔎 Comparando {len(arr_original)} señales originales con {len(arr_augmented)} aumentadas...")
-    unique,counts=np.unique(arr_original, return_counts=True)
-    print("Classes, counts: ")
-    print(np.asarray((unique, counts)).T)
-    
+
+
     # Calcular estadísticas descriptivas por señal
     def compute_stats(arr):
         return {
