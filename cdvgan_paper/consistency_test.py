@@ -71,6 +71,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
 
 
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
+    print("Starting consistency test...")
     _,counts=np.unique(label_orig, return_counts=True)
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
