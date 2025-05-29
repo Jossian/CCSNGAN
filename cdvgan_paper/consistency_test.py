@@ -42,7 +42,8 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     ax = fig.add_subplot(111)
 
     colors = {'class_0': 'royalblue', 'class_1': 'darkorange', 'class_2': 'forestgreen'}
-
+    print("classes: ", classes)
+    print("results: ", results)
     for cls in classes:
         cls_mask = np.array(results[metric_name]['label']) == cls
         x = np.array(results[metric_name]['x'])[cls_mask]
@@ -106,5 +107,5 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
 
     # Plot all metrics again
     plot_similarity_metric(classes, results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
-    plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
-    plot_similarity_metric(classes, results, 'crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
+    #plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
+    #plot_similarity_metric(classes, results, 'crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
