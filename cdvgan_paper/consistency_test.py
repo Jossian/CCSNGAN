@@ -4,6 +4,7 @@ from scipy.stats import linregress
 from scipy.stats import wasserstein_distance
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import correlate
+from matplotlib.gridspec import GridSpec
 
 
 
@@ -38,30 +39,57 @@ def compute_similarity_fast(blip, population, metric='wasserstein'):
 
 # Redefinir función de ploteo
 def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert=False):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
+    fig = plt.figure(figsize=(8, 8))
+    gs = GridSpec(2, 2, width_ratios=[4, 1], height_ratios=[1, 4], hspace=0.05, wspace=0.05)
+
+    ax_main = fig.add_subplot(gs[1, 0])
+    ax_histx = fig.add_subplot(gs[0, 0], sharex=ax_main)
+    ax_histy = fig.add_subplot(gs[1, 1], sharey=ax_main)
 
     colors = {0: 'royalblue', 1: 'darkorange', 2: 'forestgreen'}
-    print("classes: ", classes)
-    print("results: ", results)
+
     for cls in classes:
         cls_mask = np.array(results[metric_name]['label']) == cls
         x = np.array(results[metric_name]['x'])[cls_mask]
         y = np.array(results[metric_name]['y'])[cls_mask]
-        ax.scatter(x, y, label=cls, alpha=0.5, s=10, color=colors[cls])
 
+        color = colors.get(cls, 'gray')
+        ax_main.scatter(x, y, label=cls, alpha=0.5, s=10, color=color)
+
+        # Ajuste lineal
         slope, intercept, *_ = linregress(x, y)
         x_line = np.linspace(min(x), max(x), 100)
-        ax.plot(x_line, slope * x_line + intercept, color=colors[cls], label=fr"{cls}: $y = {slope:.2f}x + {intercept:.2f}$")
+        ax_main.plot(x_line, slope * x_line + intercept, color=color,
+                     label=fr"{cls}: $y = {slope:.2f}x + {intercept:.2f}$")
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(f"Similarity: {metric_name.capitalize()}")
+        # Histograma superior e izquierdo
+        ax_histx.hist(x, bins=50, color=color, alpha=0.6)
+        ax_histy.hist(y, bins=50, color=color, orientation='horizontal', alpha=0.6)
+
+        # Intervalo de confianza ±6σ
+        x_mean, x_std = np.mean(x), np.std(x)
+        y_mean, y_std = np.mean(y), np.std(y)
+        for delta in [-6, 6]:
+            ax_main.axvline(x_mean + delta * x_std, linestyle='--', color=color, alpha=0.4)
+            ax_main.axhline(y_mean + delta * y_std, linestyle='--', color=color, alpha=0.4)
+
+    # Ejes y estilo
+    ax_main.set_xlabel(xlabel)
+    ax_main.set_ylabel(ylabel)
+    ax_main.set_title(f"Similarity: {metric_name.capitalize()}")
     if invert:
-        ax.invert_yaxis()
-        ax.invert_xaxis()
-    ax.legend()
-    plt.grid(True)
+        ax_main.invert_yaxis()
+        ax_main.invert_xaxis()
+    ax_main.legend()
+    ax_main.grid(True)
+
+    ax_histx.set_yscale('log')
+    ax_histy.set_xscale('log')
+
+    # Quitar etiquetas redundantes
+    plt.setp(ax_histx.get_xticklabels(), visible=False)
+    plt.setp(ax_histy.get_yticklabels(), visible=False)
+
     plt.tight_layout()
     plt.show()
 
