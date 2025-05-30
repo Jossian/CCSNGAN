@@ -83,14 +83,17 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     real_class_sizes = {'class_0': counts[0], 'class_1': counts[1], 'class_2': counts[2]}
 
     for class_label in classes:
-        N_real = real_class_sizes[class_label]
-        B_F=dataset_gen
-        B_R=dataset_orig
-        #B_F = simulate_blips(N)  # artificial population
-        #B_R = simulate_blips(N)  # real population
+        # Filtrar las señales por clase usando las etiquetas
+        B_F_class = dataset_gen[np.array(labels_gen) == class_label]
+        B_R_class = dataset_orig[np.array(label_orig) == class_label]
+
+        # Número de señales disponibles para esta clase (por si difieren)
+        N_real = min(len(B_F_class), len(B_R_class))
+
+        print(f"Clase: {class_label}, muestras disponibles: {N_real}")
 
         for i in range(N_real):
-            bF = B_F[i]
+            bF = B_F_class[i]
             x_w, _ = compute_similarity_fast(bF, B_F, 'wasserstein')
             y_w, _ = compute_similarity_fast(bF, B_R, 'wasserstein')
 
