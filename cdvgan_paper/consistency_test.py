@@ -41,7 +41,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
-    colors = {'class_0': 'royalblue', 'class_1': 'darkorange', 'class_2': 'forestgreen'}
+    colors = {0: 'royalblue', 1: 'darkorange', 2: 'forestgreen'}
     print("classes: ", classes)
     print("results: ", results)
     for cls in classes:
