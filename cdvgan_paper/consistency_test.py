@@ -74,8 +74,12 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Starting consistency test...")
     unique,counts=np.unique(label_orig, return_counts=True)
-    print("Classes, counts: ")
+    print("Classes, counts for original: ")
     print(np.asarray((unique, counts)).T)
+
+    unique_gen,counts_gen=np.unique(labels_gen, return_counts=True)
+    print("Classes, counts for generation: ")
+    print(np.asarray((unique_gen, counts_gen)).T)
 
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
@@ -112,6 +116,6 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
                 results[metric]['label'].append(class_label)
 
     # Plot all metrics again
-    plot_similarity_metric(['class_0', 'class_1', 'class_2'], results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
+    plot_similarity_metric(classes,  results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
     #plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
     #plot_similarity_metric(classes, results, 'crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
