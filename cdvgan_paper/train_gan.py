@@ -57,13 +57,19 @@ mask = class_array != 0
 data = data[mask]
 class_array = class_array[mask]
 
+
+
+
+metrics=compare_signal_datasets(data, data_orig)
+
+
+
+class_array = class_array.astype(np.int32)
+
 unique,counts=np.unique(class_array_orig, return_counts=True)
 print("Classes, counts: ")
 print(np.asarray((unique, counts)).T)
 print("counts: ", counts)
-
-metrics=compare_signal_datasets(data, data_orig)
-
 
 
 class_array = tf.one_hot(class_array, depth=3)
