@@ -46,7 +46,13 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     ax_histx = fig.add_subplot(gs[0, 0], sharex=ax_main)
     ax_histy = fig.add_subplot(gs[1, 1], sharey=ax_main)
 
-    colors = {0: 'royalblue', 1: 'darkorange', 2: 'forestgreen'}
+    colors = {
+        0: 'royalblue',
+        1: 'darkorange',
+        2: 'forestgreen',
+        3: 'crimson',
+        4: 'mediumvioletred'
+    }
 
     for cls in classes:
         cls_mask = np.array(results[metric_name]['label']) == cls
@@ -62,16 +68,17 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         ax_main.plot(x_line, slope * x_line + intercept, color=color,
                      label=fr"{cls}: $y = {slope:.2f}x + {intercept:.2f}$")
 
-        # Histograma superior e izquierdo
+        # Histograma superior
         ax_histx.hist(x, bins=50, color=color, alpha=0.6)
-        ax_histy.hist(y, bins=50, color=color, orientation='horizontal', alpha=0.6)
-
-        # Intervalo de confianza ±6σ
         x_mean, x_std = np.mean(x), np.std(x)
+        ax_histx.axvline(x_mean - 6 * x_std, linestyle='--', color=color, alpha=0.6)
+        ax_histx.axvline(x_mean + 6 * x_std, linestyle='--', color=color, alpha=0.6)
+
+        # Histograma lateral
+        ax_histy.hist(y, bins=50, color=color, orientation='horizontal', alpha=0.6)
         y_mean, y_std = np.mean(y), np.std(y)
-        for delta in [-6, 6]:
-            ax_main.axvline(x_mean + delta * x_std, linestyle='--', color=color, alpha=0.4)
-            ax_main.axhline(y_mean + delta * y_std, linestyle='--', color=color, alpha=0.4)
+        ax_histy.axhline(y_mean - 6 * y_std, linestyle='--', color=color, alpha=0.6)
+        ax_histy.axhline(y_mean + 6 * y_std, linestyle='--', color=color, alpha=0.6)
 
     # Ejes y estilo
     ax_main.set_xlabel(xlabel)
@@ -86,7 +93,6 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     ax_histx.set_yscale('log')
     ax_histy.set_xscale('log')
 
-    # Quitar etiquetas redundantes
     plt.setp(ax_histx.get_xticklabels(), visible=False)
     plt.setp(ax_histy.get_yticklabels(), visible=False)
 
