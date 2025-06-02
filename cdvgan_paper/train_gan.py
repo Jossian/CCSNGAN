@@ -48,6 +48,10 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 #------------------------------------------------------------------------------------
 data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
 class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
+unique,counts=np.unique(class_array , return_counts=True)
+print("Classes, counts  originales del dataset: ")
+print(np.asarray((unique, counts)).T)
+
 """
 data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig.csv', delimiter=',')
 class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig.csv', delimiter=',')
@@ -157,7 +161,7 @@ if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
 
 
 # Generate signals. We will sample the class space in three different ways; vertex, simplex and uniform sampling
-num_signals = 9
+num_signals = 15
 '''indices = tf.experimental.numpy.random.randint(
         0,
         high=num_classes,
@@ -217,7 +221,6 @@ print("Generating datasets to consistency test ...")
 
 
 
-unique,counts=np.unique(class_array, return_counts=True)
 
 # Especificar el número de muestras por clase (por ejemplo: clase 0: 800, clase 1: 1200, clase 2: 500)
 #samples_per_class = [800, 1200, 500]
