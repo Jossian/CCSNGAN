@@ -53,23 +53,22 @@ class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv',
 data_signals=data
 class_array = class_array - 1
 unique,counts=np.unique(class_array , return_counts=True)
+#print("Classes, counts  originales del dataset: ")
+#print(np.asarray((unique, counts)).T)
+
+
+
+data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig_beta.csv', delimiter=',')
+class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta.csv', delimiter=',')
+class_array_orig = class_array_orig - 1
+
+unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 print("Classes, counts  originales del dataset: ")
 print(np.asarray((unique, counts)).T)
-
-"""
-data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig.csv', delimiter=',')
-class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig.csv', delimiter=',')
-
-unique,counts=np.unique(class_array_orig, return_counts=True)
-print("Classes, counts  originales del dataset: ")
-print(np.asarray((unique, counts)).T)
-
-
-
 
 metrics=compare_signal_datasets(data, data_orig)
 
-"""
+
 
 #class_array = class_array.astype(np.int32)
 
@@ -114,7 +113,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 512
-epochs = 500
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -228,11 +227,11 @@ print("Generating datasets to consistency test ...")
 
 # Especificar el número de muestras por clase (por ejemplo: clase 0: 800, clase 1: 1200, clase 2: 500)
 #samples_per_class = [800, 1200, 500]
-num_signals_datasets = np.sum(counts)
+num_signals_datasets = np.sum(counts_orig)
 
 # Crear etiquetas de clase
 labels = np.concatenate([
-    np.full(n, class_idx) for class_idx, n in enumerate(counts)
+    np.full(n, class_idx) for class_idx, n in enumerate(counts_orig)
 ])
 
 unique,counts=np.unique(labels, return_counts=True)
@@ -260,4 +259,4 @@ generations_vertex = generations_vertex.numpy()
 
 
 print("lenght generations: ", generations_vertex.shape)
-consistency_test(data_signals, class_array, generations_vertex, labels)
+consistency_test(data_orig, class_array_orig, generations_vertex, labels)

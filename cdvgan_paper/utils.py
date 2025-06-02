@@ -85,12 +85,12 @@ def plot_GAN_history(history, path, gan_variant):
 def plot_examples(data, classes, path):
     """A function to plot and save 9 examples of training or generated data."""
     plt.figure(figsize=(12,7))
-    for i in range(9):
+    for i in range(15):
         ax = plt.subplot(3, 3, i+1)
         ax.plot(data[i])
         #print("classes: ",classes[i])
         #ax.set_title(str(classes[i].round(3)))
-        ax.set_ylim(-13, 7)  # Fijar el mismo rango Y para todos los subplots
+        ax.set_ylim(-1, 1)  # Fijar el mismo rango Y para todos los subplots
 
         ax.set_title(", ".join(f"{x:.3f}" for x in classes[i]))
         #ax.set_title(classes[i].round(3))
