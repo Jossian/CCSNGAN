@@ -112,10 +112,9 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
     #N = 300  # muestras por clase
-    classes = [0,1,2]
+    classes = [0,1,2,3,4]
     # Re-run simulation with faster method
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
-    real_class_sizes = {'class_0': counts[0], 'class_1': counts[1], 'class_2': counts[2]}
 
     for class_label in classes:
         # Filtrar las señales por clase usando las etiquetas

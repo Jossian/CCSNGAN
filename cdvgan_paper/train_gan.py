@@ -25,7 +25,7 @@ print(tf.config.list_physical_devices('GPU'))
 # Set parameters.
 sample_rate = 1024
 noise_dim = 100
-num_classes = 3
+num_classes = 5
 #-----------------------------------------------------------------------------------
 # Set directories for storing outputs
 
@@ -164,7 +164,7 @@ num_signals = 9
         size=[num_signals])'''
 depth = num_classes
 
-indices = np.array([0,0,0,1,1,1,2,2,2])
+indices = np.array([0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5])
 vertex_classes = tf.one_hot(indices, depth,
           on_value=1.0, off_value=0.0,
           axis=-1)
