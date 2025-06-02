@@ -38,6 +38,7 @@ def compute_similarity_fast(blip, population, metric='wasserstein'):
     return np.mean(sims), np.std(sims) / np.sqrt(len(sims))
 
 # Redefinir función de ploteo
+
 def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert=False):
     fig = plt.figure(figsize=(8, 8))
     gs = GridSpec(2, 2, width_ratios=[4, 1], height_ratios=[1, 4], hspace=0.05, wspace=0.05)
@@ -55,18 +56,24 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     }
 
     for cls in classes:
+        # Si cls es one-hot encoding, conviértelo a número:
+        if isinstance(cls, (list, np.ndarray)):
+            cls_numeric = int(np.argmax(cls))
+        else:
+            cls_numeric = int(cls)
+
         cls_mask = np.array(results[metric_name]['label']) == cls
         x = np.array(results[metric_name]['x'])[cls_mask]
         y = np.array(results[metric_name]['y'])[cls_mask]
 
-        color = colors.get(cls, 'gray')
-        ax_main.scatter(x, y, label=cls, alpha=0.5, s=10, color=color)
+        color = colors.get(cls_numeric, 'gray')
+        ax_main.scatter(x, y, label=cls_numeric, alpha=0.5, s=10, color=color)
 
         # Ajuste lineal
         slope, intercept, *_ = linregress(x, y)
         x_line = np.linspace(min(x), max(x), 100)
         ax_main.plot(x_line, slope * x_line + intercept, color=color,
-                     label=fr"{cls}: $y = {slope:.2f}x + {intercept:.2f}$")
+                     label=fr"{cls_numeric}: $y = {slope:.2f}x + {intercept:.2f}$")
 
         # Histograma superior
         ax_histx.hist(x, bins=50, color=color, alpha=0.6)
@@ -83,7 +90,10 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     # Ejes y estilo
     ax_main.set_xlabel(xlabel)
     ax_main.set_ylabel(ylabel)
-    ax_main.set_title(f"Similarity: {metric_name.capitalize()}")
+
+    # Título general de la figura (no se superpone al histograma superior)
+    fig.suptitle(f"Similarity: {metric_name.capitalize()}", y=0.95, fontsize=14)
+
     if invert:
         ax_main.invert_yaxis()
         ax_main.invert_xaxis()
@@ -96,7 +106,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     plt.setp(ax_histx.get_xticklabels(), visible=False)
     plt.setp(ax_histy.get_yticklabels(), visible=False)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.95])  # deja espacio para el título arriba
     plt.show()
 
 # Ejecutar las gráficas optimizadas
