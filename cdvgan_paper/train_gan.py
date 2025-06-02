@@ -50,7 +50,7 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
 class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
 
-
+data_signals=data
 class_array = class_array - 1
 unique,counts=np.unique(class_array , return_counts=True)
 print("Classes, counts  originales del dataset: ")
@@ -260,4 +260,4 @@ generations_vertex = generations_vertex.numpy()
 
 
 print("lenght generations: ", generations_vertex.shape)
-consistency_test(data, class_array, generations_vertex, labels)
+consistency_test(data_signals, class_array, generations_vertex, labels)
