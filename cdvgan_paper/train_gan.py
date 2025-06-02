@@ -26,6 +26,7 @@ print(tf.config.list_physical_devices('GPU'))
 sample_rate = 1024
 noise_dim = 100
 num_classes = 5
+depth = num_classes
 #-----------------------------------------------------------------------------------
 # Set directories for storing outputs
 
@@ -48,6 +49,9 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 #------------------------------------------------------------------------------------
 data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
 class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
+
+
+class_array = class_array - 1
 unique,counts=np.unique(class_array , return_counts=True)
 print("Classes, counts  originales del dataset: ")
 print(np.asarray((unique, counts)).T)
@@ -71,7 +75,7 @@ class_array = class_array.astype(np.int32)
 
 
 
-class_array = tf.one_hot(class_array, depth=5)
+class_array = tf.one_hot(class_array, depth)
 
 zero_rows = tf.reduce_all(tf.equal(class_array, 0), axis=1)
 print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
@@ -166,7 +170,7 @@ num_signals = 15
         0,
         high=num_classes,
         size=[num_signals])'''
-depth = num_classes
+
 
 indices = np.array([0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5])
 vertex_classes = tf.one_hot(indices, depth,
