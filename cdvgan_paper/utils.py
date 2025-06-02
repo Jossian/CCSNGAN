@@ -90,7 +90,7 @@ def plot_examples(data, classes, path):
     else:
         cls_numeric = classes  # Ya es 1D, o es lista de enteros
 
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12,12))
     for i in range(15):
         ax = plt.subplot(5, 3, i + 1)
         ax.plot(data[i])
