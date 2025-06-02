@@ -260,5 +260,4 @@ generations_vertex = generations_vertex.numpy()
 
 
 print("lenght generations: ", generations_vertex.shape)
-print("class_array type: ", type(class_array))
 consistency_test(data, class_array, generations_vertex, labels)

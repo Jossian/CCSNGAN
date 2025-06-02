@@ -108,6 +108,7 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     unique_gen,counts_gen=np.unique(labels_gen, return_counts=True)
     print("Classes, counts for generation: ")
     print(np.asarray((unique_gen, counts_gen)).T)
+    print("label_orig shape: ",label_orig.shape)  # esto debería mostrar algo como (N,)
 
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
