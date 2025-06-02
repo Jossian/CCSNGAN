@@ -117,10 +117,15 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     # Re-run simulation with faster method
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
 
+    print("dataset_orig shape:", dataset_orig.shape)
+    print("label_orig shape:", label_orig.shape)
+
+
     for class_label in classes:
         # Filtrar las señales por clase usando las etiquetas
         B_F_class = dataset_gen[np.array(labels_gen) == class_label]
-        B_R_class = dataset_orig[np.array(label_orig) == class_label]
+        B_R_class = dataset_orig[label_orig == class_label]
+        #B_R_class = dataset_orig[np.array(label_orig) == class_label]
 
         # Número de señales disponibles para esta clase (por si difieren)
         N_real = min(len(B_F_class), len(B_R_class))
