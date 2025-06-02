@@ -75,9 +75,9 @@ class_array = class_array.astype(np.int32)
 
 
 
-class_array = tf.one_hot(class_array, depth)
+class_array_one_hot = tf.one_hot(class_array, depth)
 
-zero_rows = tf.reduce_all(tf.equal(class_array, 0), axis=1)
+zero_rows = tf.reduce_all(tf.equal(class_array_one_hot, 0), axis=1)
 print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
 
 #print("class_array shape: ", class_array.shape)
@@ -122,11 +122,11 @@ callback = True
 callback_path = monitor_dir+gan_choice+'/'
 
 if gan_choice in ['cDVGAN', 'MCDVGANN']:
-    data = [data, data_deriv, class_array]
+    data = [data, data_deriv, class_array_one_hot]
 elif gan_choice == 'cDVGAN2':
-    data = [data, data_deriv, data_deriv2, class_array]
+    data = [data, data_deriv, data_deriv2, class_array_one_hot]
 else:
-    data = [data, class_array]
+    data = [data, class_array_one_hot]
     
 # Start training the model, saving the histroy information.
 history = fit_GAN(gan, data, batch_size=BATCH_SIZE, epochs=epochs, gan_variant = gan_choice, callback = callback, noise_dim = noise_dim, callback_path=callback_path)
