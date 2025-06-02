@@ -71,7 +71,7 @@ class_array = class_array.astype(np.int32)
 
 
 
-class_array = tf.one_hot(class_array, depth=3)
+class_array = tf.one_hot(class_array, depth=5)
 
 zero_rows = tf.reduce_all(tf.equal(class_array, 0), axis=1)
 print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
