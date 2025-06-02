@@ -172,7 +172,7 @@ num_signals = 15
         size=[num_signals])'''
 
 
-indices = np.array([0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5])
+indices = np.array([0,0,0,1,1,1,2,2,2,3,3,3,4,4,4])
 vertex_classes = tf.one_hot(indices, depth,
           on_value=1.0, off_value=0.0,
           axis=-1)
