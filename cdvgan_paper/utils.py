@@ -86,7 +86,7 @@ def plot_examples(data, classes, path):
     """A function to plot and save 9 examples of training or generated data."""
     plt.figure(figsize=(12,7))
     for i in range(15):
-        ax = plt.subplot(3, 3, i+1)
+        ax = plt.subplot(5, 3, i+1)
         ax.plot(data[i])
         #print("classes: ",classes[i])
         #ax.set_title(str(classes[i].round(3)))
