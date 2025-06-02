@@ -162,7 +162,7 @@ class GANMonitor(keras.callbacks.Callback):
                 0,
                 high=3,
                 size=[self.num_img])
-        depth = 3
+        depth = 5
         random_classes = tf.one_hot(indices, depth,
                   on_value=1.0, off_value=0.0,
                   axis=-1)
