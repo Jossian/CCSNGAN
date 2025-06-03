@@ -106,7 +106,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     plt.setp(ax_histx.get_xticklabels(), visible=False)
     plt.setp(ax_histy.get_yticklabels(), visible=False)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])  # deja espacio para el título arriba
+    fig = plt.figure(constrained_layout=True)  # deja espacio para el título arriba
     plt.show()
 
 # Ejecutar las gráficas optimizadas
