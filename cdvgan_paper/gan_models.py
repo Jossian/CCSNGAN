@@ -633,9 +633,9 @@ class MCGANN(keras.Model):
         random_latent_vectors = tf.random.normal(shape=(2*batch_size, self.latent_dim))
         indices = tf.experimental.numpy.random.randint(
                 0,
-                high=3,
+                high=5,
                 size=[2*batch_size])
-        depth = 3
+        depth = 5
         random_classes = tf.one_hot(indices, depth,
                   on_value=1.0, off_value=0.0,
                   axis=-1)
