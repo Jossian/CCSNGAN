@@ -10,6 +10,9 @@ from scipy.signal import correlate
 import matplotlib.pyplot as plt
 import random
 
+from sklearn.decomposition import PCA
+from mpl_toolkits.mplot3d import Axes3D
+import seaborn as sns
 # Define the loss function for the discriminators,
 # which should be (fake_loss - real_loss).
 # We will add the gradient penalty later to this loss function.
@@ -105,6 +108,47 @@ def plot_examples(data, classes, path):
     plt.close()
 
     
+def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
+    """
+    Aplica PCA a los datos X (n_samples x n_features) y grafica en 3D usando etiquetas.
+
+    Parámetros:
+    - X: ndarray o DataFrame de forma (n_samples, n_features)
+    - labels: array-like de etiquetas de clase (n_samples,)
+    - label_names: lista de nombres de las clases (opcional)
+    - title: título de la gráfica (opcional)
+    """
+    # Aplicar PCA
+    pca = PCA(n_components=3)
+    X_pca = pca.fit_transform(X)
+
+    # Crear DataFrame para graficar
+    df = pd.DataFrame(X_pca, columns=['PC1', 'PC2', 'PC3'])
+    df['label'] = labels
+
+    # Etiquetas legibles
+    if label_names:
+        df['label'] = df['label'].map(dict(enumerate(label_names)))
+
+    # Graficar
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    colors = sns.color_palette("husl", df['label'].nunique())
+
+    for i, group in enumerate(df['label'].unique()):
+        subset = df[df['label'] == group]
+        ax.scatter(subset['PC1'], subset['PC2'], subset['PC3'], 
+                   label=group, s=20, alpha=0.8, color=colors[i])
+
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_zlabel("PC3")
+    ax.set_title(title)
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+
+
 def fit_GAN(GAN, data, batch_size, epochs, gan_variant = 'DVGAN', callback = False, noise_dim = 100, callback_path = 'DVGAN_monitor'):
     """A function to train the GAN model. We can choose to pass call backs to monitor the training after each epoch.
     

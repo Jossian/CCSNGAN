@@ -14,7 +14,7 @@ if str(ruta_proyecto) not in sys.path:
 
 
 from .gan_models import choose_gan
-from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN, compare_signal_datasets
+from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d
 from .consistency_test import consistency_test
 import pickle
 import json
@@ -113,7 +113,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 64
-epochs = 500
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -260,3 +260,5 @@ generations_vertex = generations_vertex.numpy()
 
 print("lenght generations: ", generations_vertex.shape)
 consistency_test(data_orig, class_array_orig, generations_vertex, labels)
+
+plot_pca_3d(generations_vertex, labels)
