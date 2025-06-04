@@ -265,7 +265,8 @@ def f1_m(y_true, y_pred):
 
 
 
-def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray, show_plots=True, max_pairs=1600):
+def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray, 
+                            labels: np.ndarray, show_plots=True, max_pairs=1600):
     """
     Compara dos datasets de señales (original vs. aumentado), aunque tengan distinto número de filas.
     Cada fila debe ser una señal temporal (por ejemplo, 256 columnas).
@@ -273,6 +274,7 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
     Parámetros:
     - arr_original: señales originales (n muestras x t puntos)
     - arr_augmented: señales aumentadas
+    - labels: array de etiquetas de clase (n muestras,)
     - show_plots: si se deben mostrar los gráficos
     - max_pairs: número de pares aleatorios para calcular cross-correlation
 
@@ -281,10 +283,10 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
     """
 
     assert arr_original.shape[1] == arr_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
+    assert len(labels) == len(arr_original), "El número de etiquetas debe coincidir con el número de señales originales"
+
     print(f"🔎 Comparando {len(arr_original)} señales originales con {len(arr_augmented)} aumentadas...")
 
-
-    # Calcular estadísticas descriptivas por señal
     def compute_stats(arr):
         return {
             "mean": np.mean(arr, axis=1),
@@ -302,7 +304,6 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
         print(f" - Original:  mean={np.mean(stats_orig[key]):.4f}, std={np.std(stats_orig[key]):.4f}")
         print(f" - Aumentado: mean={np.mean(stats_aug[key]):.4f}, std={np.std(stats_aug[key]):.4f}")
 
-    # Kolmogorov-Smirnov por punto temporal
     ks_pvalues = []
     for t in range(arr_original.shape[1]):
         stat, pval = ks_2samp(arr_original[:, t], arr_augmented[:, t])
@@ -315,7 +316,6 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
     else:
         print("✅ Las distribuciones no son significativamente diferentes en promedio.")
 
-    # Cross-correlation entre señales emparejadas aleatoriamente
     def normalized_xcorr(x, y):
         x = (x - np.mean(x)) / np.std(x)
         y = (y - np.mean(y)) / np.std(y)
@@ -331,7 +331,6 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
     ]
     print(f"\n🔗 Cross-correlation promedio (sobre {n_pairs} pares aleatorios): {np.mean(xcorr_vals):.4f}")
 
-    # Visualización
     if show_plots:
         fig, axs = plt.subplots(2, 2, figsize=(12, 8))
         axs = axs.ravel()
@@ -348,6 +347,30 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
         axs[3].hist(xcorr_vals, bins=20, color='skyblue', edgecolor='k')
         axs[3].set_title("Distribución de Cross-Correlation")
 
+        plt.tight_layout()
+        plt.show()
+
+        # --- PCA 3D por clase ---
+        print("\n🎨 Visualizando PCA 3D de señales originales por clase...")
+
+        pca = PCA(n_components=3)
+        reduced_data = pca.fit_transform(arr_original)
+
+        fig = plt.figure(figsize=(10, 7))
+        ax = fig.add_subplot(111, projection='3d')
+        classes = np.unique(labels)
+        colors = plt.cm.get_cmap('tab10', len(classes))
+
+        for i, cls in enumerate(classes):
+            idx = labels == cls
+            ax.scatter(reduced_data[idx, 0], reduced_data[idx, 1], reduced_data[idx, 2], 
+                       label=f"Clase {cls}", alpha=0.7, color=colors(i))
+
+        ax.set_title("PCA 3D de Señales Originales")
+        ax.set_xlabel("PC 1")
+        ax.set_ylabel("PC 2")
+        ax.set_zlabel("PC 3")
+        ax.legend()
         plt.tight_layout()
         plt.show()
 
