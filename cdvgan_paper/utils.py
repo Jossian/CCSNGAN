@@ -352,29 +352,8 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
 
         # --- PCA 3D por clase ---
         print("\n🎨 Visualizando PCA 3D de señales originales por clase...")
+        plot_pca_3d(arr_original,labels)
 
-        pca = PCA(n_components=3)
-        reduced_data = pca.fit_transform(arr_original)
-
-        fig = plt.figure(figsize=(10, 7))
-        ax = fig.add_subplot(111, projection='3d')
-        classes = np.unique(labels)
-        #colors = plt.cm.get_cmap('tab10', len(classes))
-        colors = sns.color_palette("husl", np.unique(labels)
-)
-
-        for i, cls in enumerate(classes):
-            idx = labels == cls
-            ax.scatter(reduced_data[idx, 0], reduced_data[idx, 1], reduced_data[idx, 2], 
-                       label=f"Clase {cls}", alpha=0.7, color=colors(i))
-
-        ax.set_title("PCA 3D de Señales Originales")
-        ax.set_xlabel("PC 1")
-        ax.set_ylabel("PC 2")
-        ax.set_zlabel("PC 3")
-        ax.legend()
-        plt.tight_layout()
-        plt.show()
 
     return {
         "stats_original": stats_orig,
