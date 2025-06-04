@@ -358,25 +358,31 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
         plt.tight_layout()
         plt.show()
 
+        # --- NUEVA SECCIÓN: graficar 3 señales originales por clase ---
+        print("\n📉 Mostrando 3 señales originales por clase...")
+        unique_classes = np.unique(labels)
+        for class_label in unique_classes:
+            class_indices = np.where(labels == class_label)[0]
+            selected_indices = np.random.choice(class_indices, size=min(3, len(class_indices)), replace=False)
+            
+            fig, axs = plt.subplots(len(selected_indices), 1, figsize=(10, 6), sharex=True)
+            if len(selected_indices) == 1:
+                axs = [axs]  # convertir a lista si es un solo subplot
+
+            for i, idx in enumerate(selected_indices):
+                axs[i].plot(arr_original[idx], color='blue')
+                axs[i].set_title(f"Clase {class_label} - Ejemplo {i+1}")
+                axs[i].set_ylim(-1, 1)  # Limitar eje y
+                axs[i].set_ylabel("Amplitud")
+                axs[i].grid(True)
+            
+            axs[-1].set_xlabel("Tiempo (puntos)")
+            plt.tight_layout()
+            plt.show()
+
         # --- PCA 3D por clase ---
         print("\n🎨 Visualizando PCA 3D de señales originales por clase...")
         plot_pca_3d(arr_original, labels)
-
-        # --- Ejemplos de señales por clase ---
-        print("\n📈 Ejemplos de señales originales por clase:")
-        unique_labels = np.unique(labels)
-        fig, axs = plt.subplots(len(unique_labels), 3, figsize=(12, 3 * len(unique_labels)))
-        for i, label in enumerate(unique_labels):
-            indices = np.where(labels == label)[0]
-            selected = np.random.choice(indices, size=min(3, len(indices)), replace=False)
-            for j in range(3):
-                ax = axs[i, j] if len(unique_labels) > 1 else axs[j]
-                ax.plot(arr_original[selected[j]])
-                ax.set_title(f'Clase {label} - Ejemplo {j+1}')
-                ax.set_xticks([])
-                ax.set_yticks([])
-        plt.tight_layout()
-        plt.show()
 
     return {
         "stats_original": stats_orig,
