@@ -358,37 +358,32 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
         plt.tight_layout()
         plt.show()
 
-        # --- NUEVA SECCIÓN: graficar 3 señales originales por clase ---
-        print("\n📉 Mostrando 3 señales originales por clase...")
+          # --- NUEVA SECCIÓN: graficar 3 señales originales por clase en una sola figura 5x3 ---
+        print("\n📉 Mostrando 3 señales originales por clase (en una sola figura 5x3)...")
         unique_classes = np.unique(labels)
+        fig, axs = plt.subplots(5, 3, figsize=(15, 10), sharex=True, sharey=True)
+        axs = axs.ravel()
+        
+        plot_idx = 0
         for class_label in unique_classes:
             class_indices = np.where(labels == class_label)[0]
             selected_indices = np.random.choice(class_indices, size=min(3, len(class_indices)), replace=False)
             
-            fig, axs = plt.subplots(len(selected_indices), 1, figsize=(10, 6), sharex=True)
-            if len(selected_indices) == 1:
-                axs = [axs]  # convertir a lista si es un solo subplot
-
             for i, idx in enumerate(selected_indices):
-                axs[i].plot(arr_original[idx], color='blue')
-                axs[i].set_title(f"Clase {class_label} - Ejemplo {i+1}")
-                axs[i].set_ylim(-1, 1)  # Limitar eje y
-                axs[i].set_ylabel("Amplitud")
-                axs[i].grid(True)
-            
-            axs[-1].set_xlabel("Tiempo (puntos)")
-            plt.tight_layout()
-            plt.show()
+                ax = axs[plot_idx]
+                ax.plot(arr_original[idx], color='blue')
+                ax.set_title(f"Clase {class_label} - Ej {i+1}")
+                ax.set_ylim(-1, 1)
+                ax.set_ylabel("Amplitud")
+                ax.grid(True)
+                plot_idx += 1
+                if plot_idx >= 15:
+                    break
+            if plot_idx >= 15:
+                break
+        
+        for ax in axs:
+            ax.set_xlabel("Tiempo")
 
-        # --- PCA 3D por clase ---
-        print("\n🎨 Visualizando PCA 3D de señales originales por clase...")
-        plot_pca_3d(arr_original, labels)
-
-    return {
-        "stats_original": stats_orig,
-        "stats_augmented": stats_aug,
-        "ks_pvalues": ks_pvalues,
-        "ks_pval_mean": avg_pval,
-        "xcorr_values": xcorr_vals,
-        "xcorr_mean": np.mean(xcorr_vals)
-    }
+        plt.tight_layout()
+        plt.show()
