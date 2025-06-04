@@ -265,23 +265,31 @@ def f1_m(y_true, y_pred):
 
 
 
+def plot_pca_3d(arr, labels):
+    pca = PCA(n_components=3)
+    arr_pca = pca.fit_transform(arr)
+
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+
+    unique_labels = np.unique(labels)
+    colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
+
+    for i, label in enumerate(unique_labels):
+        idx = labels == label
+        ax.scatter(arr_pca[idx, 0], arr_pca[idx, 1], arr_pca[idx, 2],
+                   label=f'Clase {label}', alpha=0.6, color=colors[i])
+
+    ax.set_title("PCA 3D de señales originales")
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_zlabel("PC3")
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+
 def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray, 
                             labels: np.ndarray, show_plots=True, max_pairs=1600):
-    """
-    Compara dos datasets de señales (original vs. aumentado), aunque tengan distinto número de filas.
-    Cada fila debe ser una señal temporal (por ejemplo, 256 columnas).
-
-    Parámetros:
-    - arr_original: señales originales (n muestras x t puntos)
-    - arr_augmented: señales aumentadas
-    - labels: array de etiquetas de clase (n muestras,)
-    - show_plots: si se deben mostrar los gráficos
-    - max_pairs: número de pares aleatorios para calcular cross-correlation
-
-    Retorna:
-    - Diccionario con estadísticas y métricas de comparación.
-    """
-
     assert arr_original.shape[1] == arr_augmented.shape[1], "Las señales deben tener la misma longitud temporal"
     assert len(labels) == len(arr_original), "El número de etiquetas debe coincidir con el número de señales originales"
 
@@ -352,8 +360,23 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
 
         # --- PCA 3D por clase ---
         print("\n🎨 Visualizando PCA 3D de señales originales por clase...")
-        plot_pca_3d(arr_original,labels)
+        plot_pca_3d(arr_original, labels)
 
+        # --- Ejemplos de señales por clase ---
+        print("\n📈 Ejemplos de señales originales por clase:")
+        unique_labels = np.unique(labels)
+        fig, axs = plt.subplots(len(unique_labels), 3, figsize=(12, 3 * len(unique_labels)))
+        for i, label in enumerate(unique_labels):
+            indices = np.where(labels == label)[0]
+            selected = np.random.choice(indices, size=min(3, len(indices)), replace=False)
+            for j in range(3):
+                ax = axs[i, j] if len(unique_labels) > 1 else axs[j]
+                ax.plot(arr_original[selected[j]])
+                ax.set_title(f'Clase {label} - Ejemplo {j+1}')
+                ax.set_xticks([])
+                ax.set_yticks([])
+        plt.tight_layout()
+        plt.show()
 
     return {
         "stats_original": stats_orig,
