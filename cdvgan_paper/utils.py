@@ -372,7 +372,7 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
             for i, idx in enumerate(selected_indices):
                 ax = axs[plot_idx]
                 ax.plot(arr_original[idx], color='blue')
-                ax.set_title(f"Clase {class_label} - Ej {i+1}")
+                ax.set_title(f"Clase {class_label}")
                 ax.set_ylim(-1, 1)
                 ax.set_ylabel("Amplitud")
                 ax.grid(True)
