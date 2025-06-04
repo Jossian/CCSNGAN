@@ -359,7 +359,9 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(111, projection='3d')
         classes = np.unique(labels)
-        colors = plt.cm.get_cmap('tab10', len(classes))
+        #colors = plt.cm.get_cmap('tab10', len(classes))
+        colors = sns.color_palette("husl", np.unique(labels)
+)
 
         for i, cls in enumerate(classes):
             idx = labels == cls
