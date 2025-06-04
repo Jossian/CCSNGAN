@@ -66,7 +66,7 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 print("Classes, counts  originales del dataset: ")
 print(np.asarray((unique, counts)).T)
 
-metrics=compare_signal_datasets(data, data_orig)
+metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 
 
 
