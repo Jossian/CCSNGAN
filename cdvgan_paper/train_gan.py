@@ -113,7 +113,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 32
-epochs = 500
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
