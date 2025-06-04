@@ -10,9 +10,6 @@ from scipy.signal import correlate
 import matplotlib.pyplot as plt
 import random
 
-import plotly.express as px
-
-
 from sklearn.decomposition import PCA
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
@@ -113,7 +110,7 @@ def plot_examples(data, classes, path):
     
 def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
     """
-    Aplica PCA a los datos X (n_samples x n_features) y grafica en 3D de forma interactiva usando Plotly.
+    Aplica PCA a los datos X (n_samples x n_features) y grafica en 3D usando etiquetas.
 
     Parámetros:
     - X: ndarray o DataFrame de forma (n_samples, n_features)
@@ -129,21 +126,27 @@ def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
     df = pd.DataFrame(X_pca, columns=['PC1', 'PC2', 'PC3'])
     df['label'] = labels
 
+    # Etiquetas legibles
     if label_names:
         df['label'] = df['label'].map(dict(enumerate(label_names)))
 
-    # Gráfico interactivo
-    fig = px.scatter_3d(
-        df, x='PC1', y='PC2', z='PC3',
-        color='label',
-        title=title,
-        labels={'label': 'Clase'},
-        opacity=0.75
-    )
+    # Graficar
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    colors = sns.color_palette("husl", df['label'].nunique())
 
-    fig.update_traces(marker=dict(size=4))
-    fig.update_layout(margin=dict(l=0, r=0, b=0, t=40))
-    fig.show()
+    for i, group in enumerate(df['label'].unique()):
+        subset = df[df['label'] == group]
+        ax.scatter(subset['PC1'], subset['PC2'], subset['PC3'], 
+                   label=group, s=20, alpha=0.8, color=colors[i])
+
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_zlabel("PC3")
+    ax.set_title(title)
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
 
 
 def fit_GAN(GAN, data, batch_size, epochs, gan_variant = 'DVGAN', callback = False, noise_dim = 100, callback_path = 'DVGAN_monitor'):
