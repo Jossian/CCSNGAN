@@ -116,7 +116,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-def plot_3d_projections(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
+def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """
     Aplica PCA, t-SNE y UMAP a los datos X y grafica resultados en 3D con etiquetas.
 
