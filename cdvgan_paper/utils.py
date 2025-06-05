@@ -152,8 +152,8 @@ def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
     # Título con varianza total explicada
     ax.set_title(f"{title}\nVarianza total explicada: {total_var_exp:.2f}%")
 
-    ax.legend()
-    plt.tight_layout()
+    ax.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
+    plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.90)
     plt.show()
 
 
