@@ -108,54 +108,76 @@ def plot_examples(data, classes, path):
     plt.close()
 
     
-def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import umap.umap_ as umap
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+def plot_3d_projections(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """
-    Aplica PCA a los datos X (n_samples x n_features) y grafica en 3D usando etiquetas.
+    Aplica PCA, t-SNE y UMAP a los datos X y grafica resultados en 3D con etiquetas.
 
     Parámetros:
     - X: ndarray o DataFrame de forma (n_samples, n_features)
     - labels: array-like de etiquetas de clase (n_samples,)
     - label_names: lista de nombres de las clases (opcional)
-    - title: título de la gráfica (opcional)
+    - title: título general de la gráfica
     """
-    # Aplicar PCA
+    fig = plt.figure(figsize=(18, 5))
+    projections = []
+
+    # PCA
     pca = PCA(n_components=3)
     X_pca = pca.fit_transform(X)
-
-    # Porcentaje de varianza explicada
     var_exp = pca.explained_variance_ratio_
     total_var_exp = np.sum(var_exp) * 100
+    projections.append((X_pca, f"PCA\nVarianza total: {total_var_exp:.2f}%", 
+                        [f"PC{i+1} ({v*100:.1f}%)" for i, v in enumerate(var_exp)]))
 
-    # Crear DataFrame para graficar
-    df = pd.DataFrame(X_pca, columns=['PC1', 'PC2', 'PC3'])
-    df['label'] = labels
+    # t-SNE
+    tsne = TSNE(n_components=3, perplexity=30, random_state=42)
+    X_tsne = tsne.fit_transform(X)
+    projections.append((X_tsne, "t-SNE", ["Dim 1", "Dim 2", "Dim 3"]))
+
+    # UMAP
+    reducer = umap.UMAP(n_components=3, random_state=42)
+    X_umap = reducer.fit_transform(X)
+    projections.append((X_umap, "UMAP", ["Dim 1", "Dim 2", "Dim 3"]))
 
     # Etiquetas legibles
     if label_names:
-        df['label'] = df['label'].map(dict(enumerate(label_names)))
+        label_map = dict(enumerate(label_names))
+        labels_named = pd.Series(labels).map(label_map)
+    else:
+        labels_named = labels
 
-    # Graficar
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
-    colors = sns.color_palette("husl", df['label'].nunique())
+    # Colores
+    unique_labels = np.unique(labels_named)
+    colors = sns.color_palette("husl", len(unique_labels))
 
-    for i, group in enumerate(df['label'].unique()):
-        subset = df[df['label'] == group]
-        ax.scatter(subset['PC1'], subset['PC2'], subset['PC3'], 
-                   label=group, s=20, alpha=0.8, color=colors[i])
+    for i, (proj, subtitle, axis_labels) in enumerate(projections):
+        df = pd.DataFrame(proj, columns=['X', 'Y', 'Z'])
+        df['label'] = labels_named
 
-    # Etiquetas de ejes con porcentaje de varianza
-    ax.set_xlabel(f"PC1 ({var_exp[0]*100:.2f}%)")
-    ax.set_ylabel(f"PC2 ({var_exp[1]*100:.2f}%)")
-    ax.set_zlabel(f"PC3 ({var_exp[2]*100:.2f}%)")
+        ax = fig.add_subplot(1, 3, i+1, projection='3d')
+        for j, label in enumerate(unique_labels):
+            subset = df[df['label'] == label]
+            ax.scatter(subset['X'], subset['Y'], subset['Z'],
+                       label=label, s=15, alpha=0.7, color=colors[j])
 
-    # Título con varianza total explicada
-    ax.set_title(f"{title}\nVarianza total explicada: {total_var_exp:.2f}%")
+        ax.set_title(subtitle)
+        ax.set_xlabel(axis_labels[0])
+        ax.set_ylabel(axis_labels[1])
+        ax.set_zlabel(axis_labels[2])
+        ax.legend(loc='upper right', fontsize='small')
 
-    ax.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
-    plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.90)
+    plt.suptitle(title, fontsize=16)
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.85)
     plt.show()
-
 
 def fit_GAN(GAN, data, batch_size, epochs, gan_variant = 'DVGAN', callback = False, noise_dim = 100, callback_path = 'DVGAN_monitor'):
     """A function to train the GAN model. We can choose to pass call backs to monitor the training after each epoch.
