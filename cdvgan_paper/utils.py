@@ -122,6 +122,10 @@ def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
     pca = PCA(n_components=3)
     X_pca = pca.fit_transform(X)
 
+    # Porcentaje de varianza explicada
+    var_exp = pca.explained_variance_ratio_
+    total_var_exp = np.sum(var_exp) * 100
+
     # Crear DataFrame para graficar
     df = pd.DataFrame(X_pca, columns=['PC1', 'PC2', 'PC3'])
     df['label'] = labels
@@ -140,10 +144,14 @@ def plot_pca_3d(X, labels, label_names=None, title="PCA 3D Projection"):
         ax.scatter(subset['PC1'], subset['PC2'], subset['PC3'], 
                    label=group, s=20, alpha=0.8, color=colors[i])
 
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
-    ax.set_zlabel("PC3")
-    ax.set_title(title)
+    # Etiquetas de ejes con porcentaje de varianza
+    ax.set_xlabel(f"PC1 ({var_exp[0]*100:.2f}%)")
+    ax.set_ylabel(f"PC2 ({var_exp[1]*100:.2f}%)")
+    ax.set_zlabel(f"PC3 ({var_exp[2]*100:.2f}%)")
+
+    # Título con varianza total explicada
+    ax.set_title(f"{title}\nVarianza total explicada: {total_var_exp:.2f}%")
+
     ax.legend()
     plt.tight_layout()
     plt.show()
