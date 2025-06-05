@@ -394,3 +394,4 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
 
         plt.tight_layout()
         plt.show()
+        plot_pca_3d(arr_original,labels)
