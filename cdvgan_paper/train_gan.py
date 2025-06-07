@@ -47,8 +47,12 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
   class_array = pickle.load(f)
 """
 #------------------------------------------------------------------------------------
-data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
-class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
+#data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
+#class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
+
+data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig_beta.csv', delimiter=',')
+class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta.csv', delimiter=',')
+
 
 data_signals=data
 class_array = class_array - 1
@@ -71,10 +75,8 @@ metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 
 
 #class_array = class_array.astype(np.int32)
-
-
-
 class_array_one_hot = tf.one_hot(class_array, depth)
+
 
 zero_rows = tf.reduce_all(tf.equal(class_array_one_hot, 0), axis=1)
 print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
@@ -113,7 +115,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 16
-epochs = 500
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
