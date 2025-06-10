@@ -70,6 +70,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
 
         color = colors.get(cls_numeric, 'gray')
         ax_main.scatter(x, y, label=cls_numeric, alpha=0.5, s=10, color=color)
+        print("DEBUG SHAPES", metric_name, "x:", np.array(x).shape, "y:", np.array(y).shape)
 
         # Ajuste lineal
         slope, intercept, *_ = linregress(x, y)
@@ -154,33 +155,39 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     unique_gen,counts_gen=np.unique(labels_gen, return_counts=True)
     print("Classes, counts for generation: ")
     print(np.asarray((unique_gen, counts_gen)).T)
-    print("label_orig shape: ",label_orig.shape)
+    print("label_orig shape: ",label_orig.shape)  # esto debería mostrar algo como (N,)
 
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
+    #N = 300  # muestras por clase
     classes = [0,1,2,3,4]
+    # Re-run simulation with faster method
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
 
     print("dataset_orig shape:", dataset_orig.shape)
     print("label_orig shape:", label_orig.shape)
 
     for class_label in classes:
+        # Filtrar las señales por clase usando las etiquetas
         B_F_class = dataset_gen[np.array(labels_gen) == class_label]
         B_R_class = dataset_orig[label_orig == class_label]
+        #B_R_class = dataset_orig[np.array(label_orig) == class_label]
 
+        # Número de señales disponibles para esta clase (por si difieren)
         N_real = min(len(B_F_class), len(B_R_class))
+
         print(f"Clase: {class_label}, muestras disponibles: {N_real}")
 
         for i in range(N_real):
             bF = B_F_class[i]
-            x_w  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
-            y_w  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
+            xw,  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
+            yw,  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
 
-            x_m  = compute_similarity_fast(bF, B_F_class, 'match')
-            y_m  = compute_similarity_fast(bF, B_R_class, 'match')
+            xm,  = compute_similarity_fast(bF, B_F_class, 'match')
+            ym,  = compute_similarity_fast(bF, B_R_class, 'match')
 
-            x_k  = compute_similarity_fast(bF, B_F_class, 'crosscov')
-            y_k  = compute_similarity_fast(bF, B_R_class, 'crosscov')
+            xk,  = compute_similarity_fast(bF, B_F_class, 'crosscov')
+            yk,  = compute_similarity_fast(bF, B_R_class, 'crosscov')
 
             for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
                 results[metric]['x'].append(x)
