@@ -180,14 +180,14 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
 
         for i in range(N_real):
             bF = B_F_class[i]
-            xw  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
-            yw  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
+            x_w  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
+            y_w  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
 
-            xm  = compute_similarity_fast(bF, B_F_class, 'match')
-            ym  = compute_similarity_fast(bF, B_R_class, 'match')
+            x_m  = compute_similarity_fast(bF, B_F_class, 'match')
+            y_m  = compute_similarity_fast(bF, B_R_class, 'match')
 
-            xk  = compute_similarity_fast(bF, B_F_class, 'crosscov')
-            yk  = compute_similarity_fast(bF, B_R_class, 'crosscov')
+            x_k  = compute_similarity_fast(bF, B_F_class, 'crosscov')
+            y_k  = compute_similarity_fast(bF, B_R_class, 'crosscov')
 
             for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
                 results[metric]['x'].append(x)
