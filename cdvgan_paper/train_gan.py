@@ -50,8 +50,8 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 #data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
 #class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
 
-data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig_beta.csv', delimiter=',')
-class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta.csv', delimiter=',')
+data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
+class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
 
 
 data_signals=data
@@ -114,8 +114,8 @@ print("deriv_signal_length: ",deriv_signal_length)
 gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_length, num_classes, noise_dim)
 
 # Set batch size and number of epochs for training.
-BATCH_SIZE = 32
-epochs = 500
+BATCH_SIZE = 8
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
