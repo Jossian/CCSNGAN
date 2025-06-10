@@ -147,92 +147,126 @@ def compute_mmd(K_xx, K_yy, K_xy):
 
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Starting consistency test...")
+    unique,counts=np.unique(label_orig, return_counts=True)
+    print("Classes, counts for original: ")
+    print(np.asarray((unique, counts)).T)
 
-    unique, counts = np.unique(label_orig, return_counts=True)
-    print("Original class distribution:\n", np.asarray((unique, counts)).T)
-    unique_gen, counts_gen = np.unique(labels_gen, return_counts=True)
-    print("Generated class distribution:\n", np.asarray((unique_gen, counts_gen)).T)
+    unique_gen,counts_gen=np.unique(labels_gen, return_counts=True)
+    print("Classes, counts for generation: ")
+    print(np.asarray((unique_gen, counts_gen)).T)
+    print("label_orig shape: ",label_orig.shape)
 
+    # ---- CONFIGURACIÓN ----
     np.random.seed(42)
-    classes = np.unique(label_orig)
+    classes = [0,1,2,3,4]
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
-    mmd_results = {'class_conditional': {}, 'overall': None, 'cross_class': {}}
+
+    print("dataset_orig shape:", dataset_orig.shape)
+    print("label_orig shape:", label_orig.shape)
+
+    for class_label in classes:
+        B_F_class = dataset_gen[np.array(labels_gen) == class_label]
+        B_R_class = dataset_orig[label_orig == class_label]
+
+        N_real = min(len(B_F_class), len(B_R_class))
+        print(f"Clase: {class_label}, muestras disponibles: {N_real}")
+
+        for i in range(N_real):
+            bF = B_F_class[i]
+            x_w,  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
+            y_w,  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
+
+            x_m,  = compute_similarity_fast(bF, B_F_class, 'match')
+            y_m,  = compute_similarity_fast(bF, B_R_class, 'match')
+
+            x_k,  = compute_similarity_fast(bF, B_F_class, 'crosscov')
+            y_k,  = compute_similarity_fast(bF, B_R_class, 'crosscov')
+
+            for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
+                results[metric]['x'].append(x)
+                results[metric]['y'].append(y)
+                results[metric]['label'].append(class_label)
+
+    # Plot all metrics again
+    plot_similarity_metric(classes,  results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
+    plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$')
+    plot_similarity_metric(classes, results, 'crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$')
+
+    # --------- ⬇️ AGREGADO: MMD CON DTW Y KERNEL RBF MULTIESCALA ⬇️ ----------
+    print("\n🔍 Calculando MMD usando DTW + multi-scale RBF...")
+    mmd_results = {'overall': None, 'class_conditional': {}, 'cross_class': {}}
 
     # Overall MMD
-    print("\nComputing Overall MMD using DTW + Multi-Scale RBF...")
-    D_oo = compute_dtw_distance_matrix(dataset_orig, dataset_orig)
-    D_gg = compute_dtw_distance_matrix(dataset_gen, dataset_gen)
-    D_og = compute_dtw_distance_matrix(dataset_orig, dataset_gen)
+    D_rr = compute_dtw_distance_matrix(dataset_orig, dataset_orig)
+    D_ff = compute_dtw_distance_matrix(dataset_gen, dataset_gen)
+    D_rf = compute_dtw_distance_matrix(dataset_orig, dataset_gen)
 
-    K_oo = multi_scale_rbf_kernel(D_oo)
-    K_gg = multi_scale_rbf_kernel(D_gg)
-    K_og = multi_scale_rbf_kernel(D_og)
+    K_rr = multi_scale_rbf_kernel(D_rr)
+    K_ff = multi_scale_rbf_kernel(D_ff)
+    K_rf = multi_scale_rbf_kernel(D_rf)
 
-    mmd_results['overall'] = compute_mmd(K_oo, K_gg, K_og)
+    mmd_results['overall'] = compute_mmd(K_rr, K_ff, K_rf)
+    print(f"✅ Overall MMD²: {mmd_results['overall']:.4f}")
 
-    # Class-conditional MMD
-    print("\nComputing Class-conditional MMD...")
+    # Class-Conditional MMD
     for c in classes:
         X = dataset_orig[label_orig == c]
         Y = dataset_gen[labels_gen == c]
 
+        ### prueba rápida
+        X = X[:30]
+        Y = Y[:30]
+        ###
         if len(X) < 2 or len(Y) < 2:
-            print(f"Skipping class {c} (too few samples)")
+            print(f"⚠️ Clase {c} omitida por insuficientes muestras.")
             continue
-
         D_xx = compute_dtw_distance_matrix(X, X)
         D_yy = compute_dtw_distance_matrix(Y, Y)
         D_xy = compute_dtw_distance_matrix(X, Y)
-
         K_xx = multi_scale_rbf_kernel(D_xx)
         K_yy = multi_scale_rbf_kernel(D_yy)
         K_xy = multi_scale_rbf_kernel(D_xy)
-
         mmd = compute_mmd(K_xx, K_yy, K_xy)
         mmd_results['class_conditional'][c] = mmd
 
-    # Cross-class MMD
-    print("\nComputing Cross-class MMD...")
+    # Cross-Class MMD
     for i in classes:
         for j in classes:
             if i >= j: continue
             Xi = dataset_orig[label_orig == i]
             Yj = dataset_gen[labels_gen == j]
-            if len(Xi) < 2 or len(Yj) < 2:
-                continue
-
+            if len(Xi) < 2 or len(Yj) < 2: continue
             D_ij = compute_dtw_distance_matrix(Xi, Yj)
             K_ij = multi_scale_rbf_kernel(D_ij)
             mmd_cross = np.mean(K_ij)
             mmd_results['cross_class'][(i, j)] = mmd_cross
 
-    # Plotting Class-conditional MMD
-    plt.figure(figsize=(8, 5))
+    # 📊 Plots
+    # Class-conditional MMD
     keys = list(mmd_results['class_conditional'].keys())
     values = [mmd_results['class_conditional'][k] for k in keys]
+    plt.figure(figsize=(8, 5))
     plt.bar(keys, values)
-    plt.title("Class-conditional MMD using DTW + Multi-scale RBF")
+    plt.title("Class-conditional MMD (DTW + RBF)")
     plt.xlabel("Class")
     plt.ylabel("MMD²")
     plt.grid(True)
     plt.show()
 
-    # Plotting Cross-class MMD heatmap
-    cross_class_pairs = list(mmd_results['cross_class'].keys())
-    if cross_class_pairs:
-        matrix = np.zeros((len(classes), len(classes)))
-        for (i, j), val in mmd_results['cross_class'].items():
-            matrix[i, j] = val
-            matrix[j, i] = val  # symmetry
-        plt.figure(figsize=(6, 5))
-        plt.imshow(matrix, interpolation='nearest', cmap='viridis')
-        plt.colorbar(label="MMD Cross-class")
-        plt.title("Cross-class MMD Heatmap")
-        plt.xticks(classes)
-        plt.yticks(classes)
-        plt.xlabel("Class")
-        plt.ylabel("Class")
-        plt.show()
-
-    # Print Overall MMD
-    print(f"\nOverall MMD: {mmd_results['overall']:.4f}")
+    # Cross-class heatmap
+    matrix = np.zeros((len(classes), len(classes)))
+    for (i, j), val in mmd_results['cross_class'].items():
+        i_idx = int(i)
+        j_idx = int(j)
+        matrix[i_idx, j_idx] = val  
+        matrix[j_idx, i_idx] = val  # symmetry
+    plt.figure(figsize=(6, 5))
+    plt.imshow(matrix, interpolation='nearest', cmap='viridis')
+    plt.colorbar(label="Cross-class similarity (avg. kernel)")
+    plt.title("Cross-class MMD Heatmap")
+    plt.xticks(classes)
+    plt.yticks(classes)
+    plt.xlabel("Class")
+    plt.ylabel("Class")
+    plt.show()
+    # --------- ⬆️ FIN DEL BLOQUE AGREGADO ⬆️ ----------
