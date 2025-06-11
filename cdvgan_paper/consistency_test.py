@@ -123,26 +123,43 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
 
 def compute_dtw_distance_matrix(X, Y):
     dist_matrix = np.zeros((len(X), len(Y)))
+    total = len(X) * len(Y)
+    count = 0
+
+    print(f"🔁 Calculando matriz de distancias DTW ({len(X)} x {len(Y)})...", flush=True)
     for i, x in enumerate(X):
         for j, y in enumerate(Y):
             dist, _ = fastdtw(x, y)
             dist_matrix[i, j] = dist
+            count += 1
+
+            # Imprimir progreso cada 5%
+            if count % max(total // 20, 1) == 0:
+                print(f"  Progreso: {100 * count // total}% ({count}/{total})", flush=True)
+
+    print("✅ Matriz de distancias DTW completa.\n", flush=True)
     return dist_matrix
 
 def multi_scale_rbf_kernel(D, sigmas=[0.1, 1.0, 10.0]):
     """Multi-scale RBF kernel from distance matrix"""
+    print(f"🧮 Aplicando kernel RBF multi-escala con sigmas = {sigmas}", flush=True)
     K = np.zeros_like(D)
     for sigma in sigmas:
+        print(f"  ➤ Procesando sigma = {sigma}", flush=True)
         K += np.exp(-D**2 / (2 * sigma**2))
+    print("✅ Kernel RBF calculado.\n", flush=True)
     return K
 
 def compute_mmd(K_xx, K_yy, K_xy):
     """Biased estimator of MMD^2"""
+    print("📏 Calculando MMD...", flush=True)
     m = K_xx.shape[0]
     n = K_yy.shape[0]
-    return (np.sum(K_xx) / (m * m) +
+    mmd2 = (np.sum(K_xx) / (m * m) +
             np.sum(K_yy) / (n * n) -
             2 * np.sum(K_xy) / (m * n))
+    print(f"✅ MMD^2 calculado: {mmd2:.6f}\n", flush=True)
+    return mmd2
 
 ######################################################################################
 
@@ -221,8 +238,8 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
         Y = dataset_gen[labels_gen == c]
 
         ### prueba rápida
-        X = X[:30]
-        Y = Y[:30]
+        #X = X[:30]
+        #Y = Y[:30]
         ###
         if len(X) < 2 or len(Y) < 2:
             print(f"⚠️ Clase {c} omitida por insuficientes muestras.")
