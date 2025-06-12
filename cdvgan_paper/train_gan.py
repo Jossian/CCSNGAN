@@ -20,7 +20,7 @@ import pickle
 import json
 import os
 
-print(tf.config.list_physical_devices('GPU'))
+#print(tf.config.list_physical_devices('GPU'))
 
 # Set parameters.
 sample_rate = 1024
@@ -67,8 +67,8 @@ class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta
 class_array_orig = class_array_orig - 1
 
 unique,counts_orig=np.unique(class_array_orig, return_counts=True)
-print("Classes, counts  originales del dataset: ")
-print(np.asarray((unique, counts)).T)
+#print("Classes, counts  originales del dataset: ")
+#print(np.asarray((unique, counts)).T)
 
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 
@@ -79,7 +79,7 @@ class_array_one_hot = tf.one_hot(class_array, depth)
 
 
 zero_rows = tf.reduce_all(tf.equal(class_array_one_hot, 0), axis=1)
-print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
+#print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
 
 #print("class_array shape: ", class_array.shape)
 
@@ -109,13 +109,13 @@ gan_choice = gan_choice_dict[gan_choice_int]
 signal_length = data.shape[-1]
 deriv_signal_length = data_deriv.shape[-1]
 deriv2_signal_length = data_deriv2.shape[-1]
-print("deriv_signal_length: ",deriv_signal_length)
+#print("deriv_signal_length: ",deriv_signal_length)
 # Create and compile GAN model
 gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_length, num_classes, noise_dim)
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 32
-epochs = 400
+epochs = 500
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -155,6 +155,7 @@ json.dump(history_dict, open(output_path+'/history.json', 'w'))
 gan.generator.save(f'{gan_exp_dir}/{gan_choice.lower()}.keras')
 
 # Save all components.
+print("generator saved on: ", output_path)
 gan.generator.save(output_path+'/Generator.keras')
 gan.discriminator.save(output_path+'/Discriminator.keras')
 if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
@@ -204,7 +205,7 @@ vertex_classes = vertex_classes.numpy()
 simplex_classes = simplex_classes.numpy()
 uniform_classes = uniform_classes.numpy()
 
-print("vertex classes: ", vertex_classes)
+#print("vertex classes: ", vertex_classes)
 # Plot some examples of generated data using different sampling methods.
 plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
 plot_examples(generations_simplex, simplex_classes, output_path+'/Simplex_examples')
