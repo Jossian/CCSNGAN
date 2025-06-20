@@ -114,7 +114,7 @@ deriv2_signal_length = data_deriv2.shape[-1]
 gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_length, num_classes, noise_dim)
 
 # Set batch size and number of epochs for training.
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 epochs = 350
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
