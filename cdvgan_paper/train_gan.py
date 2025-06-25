@@ -50,8 +50,8 @@ with open(f'{ruta_proyecto}/data/class_array.pkl', 'rb') as f:
 #data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
 #class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
 
-data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta.csv', delimiter=',')
-class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta.csv', delimiter=',')
+data = np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_aug_beta_350.csv', delimiter=',')
+class_array = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_aug_beta_350.csv', delimiter=',')
 
 
 data_signals=data
@@ -62,8 +62,8 @@ unique,counts=np.unique(class_array , return_counts=True)
 
 
 
-data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig_beta.csv', delimiter=',')
-class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta.csv', delimiter=',')
+data_orig=np.loadtxt(f'{ruta_proyecto}/data/ConditionalSignals_orig_beta_350.csv', delimiter=',')
+class_array_orig = np.loadtxt(f'{ruta_proyecto}/data/ConditionalLabels_orig_beta_350.csv', delimiter=',')
 class_array_orig = class_array_orig - 1
 
 unique,counts_orig=np.unique(class_array_orig, return_counts=True)
