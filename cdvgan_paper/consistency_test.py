@@ -198,9 +198,10 @@ def plot_histograms(results,classes, bins=50):
             cls_mask = np.array(results[metric_name]['label']) == cls
             x = np.array(results[metric_name]['x'])[cls_mask]
             color = colors.get(cls_numeric, 'gray')
-            ax.hist(x, bins=bins, color=color)
-            ax.set_title(cls)
+            ax.hist(x, bins=bins, color=color,alpha=0.6)
+            ax.set_title(metric_name)
             ax.grid(True)
+            ax.legend()
 
     
 
