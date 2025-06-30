@@ -161,6 +161,37 @@ def compute_mmd(K_xx, K_yy, K_xy):
     print(f"✅ MMD^2 calculado: {mmd2:.6f}\n", flush=True)
     return mmd2
 
+
+
+
+def plot_histograms(data1, data2, data3, labels=None, bins=50, figsize=(15, 4), colors=None):
+    """
+    Plotea tres histogramas como subplots.
+
+    Parámetros:
+    - data1, data2, data3: listas o arrays con los datos.
+    - labels: lista de títulos para cada histograma. Por defecto: ["Hist 1", "Hist 2", "Hist 3"]
+    - bins: número de bins o lista de bins para los histogramas.
+    - figsize: tamaño de la figura (ancho, alto).
+    - colors: lista de colores para los histogramas.
+
+    """
+    if labels is None:
+        labels = ["Hist 1", "Hist 2", "Hist 3"]
+    if colors is None:
+        colors = ["skyblue", "salmon", "lightgreen"]
+
+    data_list = [data1, data2, data3]
+    
+    fig, axs = plt.subplots(1, 3, figsize=figsize)
+
+    for i, ax in enumerate(axs):
+        ax.hist(data_list[i], bins=bins, color=colors[i], edgecolor='black')
+        ax.set_title(labels[i])
+        ax.grid(True)
+
+    plt.tight_layout()
+    plt.show()
 ######################################################################################
 
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
@@ -197,20 +228,26 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
 
         for i in range(N_real):
             bF = B_F_class[i]
+            bR= B_R_class[i]
+
             x_w,_  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
             y_w,_  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
+            orig_hist_w=compute_similarity_fast(bR, B_R_class, 'wasserstein')
 
             x_m,_  = compute_similarity_fast(bF, B_F_class, 'match')
             y_m,_  = compute_similarity_fast(bF, B_R_class, 'match')
+            orig_hist_m=compute_similarity_fast(bR, B_R_class, 'match')
 
             x_k,_  = compute_similarity_fast(bF, B_F_class, 'crosscov')
             y_k,_  = compute_similarity_fast(bF, B_R_class, 'crosscov')
+            orig_hist_c=compute_similarity_fast(bR, B_R_class, 'crosscov')
 
             for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
                 results[metric]['x'].append(x)
                 results[metric]['y'].append(y)
                 results[metric]['label'].append(class_label)
 
+    plot_histograms(orig_hist_w,orig_hist_m,orig_hist_c,labels=classes)
     # Plot all metrics again
     plot_similarity_metric(classes,  results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
     plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$')
