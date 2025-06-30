@@ -213,7 +213,7 @@ def plot_histograms(results,classes, bins=50):
     #    ax.hist(data_list[i], bins=bins, color=colors[i], edgecolor='black')
     #    ax.set_title(labels[i])
     #    ax.grid(True)
-    fig.suptitle(f"W(BR, BR): {metric_name.capitalize()}", y=0.95, fontsize=14)
+    fig.suptitle(f"W(BR, BR)", y=0.95, fontsize=14)
     plt.tight_layout()
     plt.show()
 ######################################################################################
@@ -272,7 +272,7 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
                 results[metric]['y'].append(y)
                 results[metric]['label'].append(class_label)
 
-                results_hist[metric]['x'].append(x)
+                results_hist[metric]['x'].append([orig_hist_w,orig_hist_m,orig_hist_c])
                 results_hist[metric]['label'].append(class_label)
 
 
