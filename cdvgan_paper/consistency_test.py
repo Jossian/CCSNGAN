@@ -164,7 +164,7 @@ def compute_mmd(K_xx, K_yy, K_xy):
 
 
 
-def plot_histograms(results,classes, bins=50, figsize=(15, 4), colors=None):
+def plot_histograms(results,classes, bins=50):
     """
     Plotea tres histogramas como subplots.
 
@@ -176,8 +176,15 @@ def plot_histograms(results,classes, bins=50, figsize=(15, 4), colors=None):
 
     """
     metric_names=['wasserstein', 'match', 'crosscov']
+    figsize=(15, 4)
     fig, axs = plt.subplots(1, 3, figsize=figsize)
-
+    colors = {
+        0: 'royalblue',
+        1: 'darkorange',
+        2: 'forestgreen',
+        3: 'crimson',
+        4: 'mediumvioletred'
+    }
 
     for i, ax in enumerate(axs):
         metric_name=metric_names[i]
