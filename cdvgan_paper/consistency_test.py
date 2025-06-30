@@ -164,32 +164,48 @@ def compute_mmd(K_xx, K_yy, K_xy):
 
 
 
-def plot_histograms(data1, data2, data3, labels=None, bins=30, figsize=(15, 4), colors=None):
+def plot_histograms(results,classes, bins=50, figsize=(15, 4), colors=None):
     """
     Plotea tres histogramas como subplots.
 
     Parámetros:
-    - data1, data2, data3: listas o arrays con los datos.
-    - labels: lista de títulos para cada histograma. Por defecto: ["Hist 1", "Hist 2", "Hist 3"]
+    - results_hist 
     - bins: número de bins o lista de bins para los histogramas.
     - figsize: tamaño de la figura (ancho, alto).
     - colors: lista de colores para los histogramas.
 
     """
-    if labels is None:
-        labels = ["Hist 1", "Hist 2", "Hist 3"]
-    if colors is None:
-        colors = ["skyblue", "salmon", "lightgreen"]
-
-    data_list = [data1, data2, data3]
-    
+    metric_names=['wasserstein', 'match', 'crosscov']
     fig, axs = plt.subplots(1, 3, figsize=figsize)
 
-    for i, ax in enumerate(axs):
-        ax.hist(data_list[i], bins=bins, color=colors[i], edgecolor='black')
-        ax.set_title(labels[i])
-        ax.grid(True)
 
+    for i, ax in enumerate(axs):
+        metric_name=metric_names[i]
+        for cls in classes:
+            # Si cls es one-hot encoding, conviértelo a número:
+            if isinstance(cls, (list, np.ndarray)):
+                cls_numeric = int(np.argmax(cls))
+            else:
+                cls_numeric = int(cls)
+
+            cls_mask = np.array(results[metric_name]['label']) == cls
+            x = np.array(results[metric_name]['x'])[cls_mask]
+            color = colors.get(cls_numeric, 'gray')
+            ax.hist(x, bins=bins, color=color)
+            ax.set_title(cls)
+            ax.grid(True)
+
+    
+
+    #data_list = [data1, data2, data3]
+    
+        #fig, axs = plt.subplots(1, 3, figsize=figsize)
+
+    #for i, ax in enumerate(axs):
+    #    ax.hist(data_list[i], bins=bins, color=colors[i], edgecolor='black')
+    #    ax.set_title(labels[i])
+    #    ax.grid(True)
+    fig.suptitle(f"W(BR, BR): {metric_name.capitalize()}", y=0.95, fontsize=14)
     plt.tight_layout()
     plt.show()
 ######################################################################################
@@ -211,6 +227,7 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     classes = [0,1,2,3,4]
     # Re-run simulation with faster method
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
+    results_hist = {m: {'x': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
 
     print("dataset_orig shape:", dataset_orig.shape)
     print("label_orig shape:", label_orig.shape)
@@ -247,7 +264,14 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
                 results[metric]['y'].append(y)
                 results[metric]['label'].append(class_label)
 
-    plot_histograms(orig_hist_w,orig_hist_m,orig_hist_c,labels=classes)
+                results_hist[metric]['x'].append(x)
+                results_hist[metric]['label'].append(class_label)
+
+
+
+
+
+    plot_histograms(results_hist,classes)
     # Plot all metrics again
     plot_similarity_metric(classes,  results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
     plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$')
