@@ -198,6 +198,7 @@ def plot_histograms(results,classes, bins=50):
             cls_mask = np.array(results[metric_name]['label']) == cls
             x = np.array(results[metric_name]['x'])[cls_mask]
             print("x shape: ", x.shape)
+            print("x: ", x)
             color = colors.get(cls_numeric, 'gray')
             ax.hist(x, bins=bins, color=color,alpha=0.6)
             ax.set_title(metric_name)
@@ -274,6 +275,11 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
                 results[metric]['label'].append(class_label)
 
                 results_hist[metric]['x'].append([orig_hist_w,orig_hist_m,orig_hist_c])
+                results_hist[metric]['label'].append(class_label)
+
+
+            for metric, x in zip(['wasserstein', 'match', 'crosscov'], [orig_hist_w,orig_hist_m,orig_hist_c]):
+                results_hist[metric]['x'].append(x)
                 results_hist[metric]['label'].append(class_label)
 
 
