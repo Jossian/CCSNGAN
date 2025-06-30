@@ -164,7 +164,7 @@ def compute_mmd(K_xx, K_yy, K_xy):
 
 
 
-def plot_histograms(data1, data2, data3, labels=None, bins=50, figsize=(15, 4), colors=None):
+def plot_histograms(data1, data2, data3, labels=None, bins=30, figsize=(15, 4), colors=None):
     """
     Plotea tres histogramas como subplots.
 
