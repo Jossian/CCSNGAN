@@ -11,6 +11,7 @@ ruta_actual = Path(__file__).resolve()
 ruta_proyecto = ruta_actual.parents[0]  # .parents[0] es el archivo mismo, .parents[1] es el padre, etc.
 if str(ruta_proyecto) not in sys.path:
     sys.path.insert(0, str(ruta_proyecto))
+import time
 
 
 from .gan_models import choose_gan
@@ -192,7 +193,11 @@ latent_vectors_vertex = tf.random.normal(shape=(num_signals, noise_dim))
 latent_vectors_simplex = tf.random.normal(shape=(num_signals, noise_dim))
 latent_vectors_uniform = tf.random.normal(shape=(num_signals, noise_dim))
 
+start = time.time()
 generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes])
+end = time.time()
+print(f"Tiempo de generación para 15 señales: {end - start:.6f} segundos")
+
 generations_vertex = generations_vertex.numpy()
 
 generations_simplex = gan.generator([latent_vectors_vertex, simplex_classes])
@@ -251,14 +256,11 @@ vertex_classes_datasets = tf.one_hot(labels, depth,
 zero_rows = tf.reduce_all(tf.equal(vertex_classes_datasets, 0), axis=1)
 print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
 
-
-
-
 latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
+
 generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes_datasets])
+
 generations_vertex = generations_vertex.numpy()
-
-
 
 
 print("lenght generations: ", generations_vertex.shape)
