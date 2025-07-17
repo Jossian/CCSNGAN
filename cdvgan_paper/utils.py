@@ -85,8 +85,43 @@ def plot_GAN_history(history, path, gan_variant):
     plt.close()
     
 
-def plot_examples(data, classes, path):
-    """A function to plot and save 15 examples of training or generated data."""
+def plot_examples_5(data, classes, path):
+    """Plot and save one example per class (up to 5 classes) vertically."""
+    # Convertir a etiquetas si es one-hot
+    if isinstance(classes, (list, np.ndarray)) and np.ndim(classes) > 1:
+        cls_numeric = np.argmax(classes, axis=1)
+    else:
+        cls_numeric = np.array(classes)
+
+    # Obtener señales representativas: una por clase
+    unique_classes = np.unique(cls_numeric)
+    selected_signals = []
+    selected_labels = []
+
+    for c in unique_classes[:5]:  # máximo 5 clases
+        idx = np.where(cls_numeric == c)[0]
+        if len(idx) > 0:
+            selected_signals.append(data[idx[0]])
+            selected_labels.append(c)
+
+    # Graficar verticalmente
+    plt.figure(figsize=(10, 10))
+    for i, (signal, label) in enumerate(zip(selected_signals, selected_labels)):
+        ax = plt.subplot(len(selected_signals), 1, i + 1)
+        ax.plot(signal)
+        ax.set_ylim(-1, 1)
+        ax.set_title(f"Clase: {label}")
+        ax.set_xlabel("Tiempo")
+        ax.set_ylabel("Amplitud [A.U.]")
+
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.show()
+    plt.close()
+
+
+def plot_examples_5(data, classes, path):
+    """A function to plot and save 5 examples of training or generated data."""
     # Si classes es una lista/array de one-hot, convertir a enteros
     if isinstance(classes, (list, np.ndarray)) and np.ndim(classes) > 1:
         cls_numeric = np.argmax(classes, axis=1)
@@ -94,8 +129,8 @@ def plot_examples(data, classes, path):
         cls_numeric = classes  # Ya es 1D, o es lista de enteros
 
     plt.figure(figsize=(12,12))
-    for i in range(15):
-        ax = plt.subplot(5, 3, i + 1)
+    for i in range(5):
+        ax = plt.subplot(5, 1, i + 1)
         ax.plot(data[i])
         ax.set_ylim(-1, 1)
 
