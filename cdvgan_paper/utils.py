@@ -135,7 +135,7 @@ def plot_examples_5(data, classes, path):
         ax.set_ylim(-1, 1)
         ax.set_title(f"Clase: {label}")
         ax.set_xlabel("Tiempo")
-        ax.set_ylabel("Amplitud")
+        ax.set_ylabel("Amplitud [A.U.]")
 
     plt.tight_layout()
     plt.savefig(path)
