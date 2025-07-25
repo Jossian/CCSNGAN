@@ -5,7 +5,7 @@ from scipy.stats import wasserstein_distance
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import correlate
 from matplotlib.gridspec import GridSpec
-
+from numpy.fft import fft
 from scipy.spatial.distance import cdist
 from fastdtw import fastdtw
 from sklearn.metrics.pairwise import rbf_kernel
@@ -15,10 +15,19 @@ def simulate_blips(n, dim=50):
     return np.random.normal(0, 1, size=(n, dim))
 
 # Métrica de similitud: Wasserstein (W1), match function (Mf), cross-covariance (k)
+"""
 def match_function(x, y):
     x = x / np.linalg.norm(x)
     y = y / np.linalg.norm(y)
     return np.dot(x, y)
+"""
+
+def match_functionv(x, y):
+    X = fft(x)
+    Y = fft(y)
+    X = X / np.linalg.norm(X)
+    Y = Y / np.linalg.norm(Y)
+    return np.vdot(X, Y).real  # vdot incluye conjugado
 
 # Optimized normalized cross-covariance using direct formula
 def normalized_cross_covariance_fast(x, y):
