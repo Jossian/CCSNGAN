@@ -22,7 +22,7 @@ def match_function(x, y):
     return np.dot(x, y)
 """
 
-def match_functionv(x, y):
+def match_function(x, y):
     X = fft(x)
     Y = fft(y)
     X = X / np.linalg.norm(X)
