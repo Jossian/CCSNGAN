@@ -101,6 +101,8 @@ def plot_examples(data, classes, path):
 
         # Establece el título con la clase correspondiente
         ax.set_title(f"Clase: {cls_numeric[i]}")
+        ax.set_xlabel("Data points")
+        ax.set_ylabel("Amplitud [A.U.]")
 
     plt.subplots_adjust(hspace=0.4)
     plt.savefig(path)
