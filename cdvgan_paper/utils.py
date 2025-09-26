@@ -404,20 +404,20 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
           # --- NUEVA SECCIÓN: graficar 3 señales originales por clase en una sola figura 5x3 ---
         print("\n📉 Mostrando 3 señales originales por clase (en una sola figura 5x3)...")
         unique_classes = np.unique(labels)
-        fig, axs = plt.subplots(5, 3, figsize=(15, 10), sharex=True, sharey=True)
+        fig, axs = plt.subplots(5, 1, figsize=(15, 10), sharex=True, sharey=True)
         axs = axs.ravel()
         
         plot_idx = 0
         for class_label in unique_classes:
             class_indices = np.where(labels == class_label)[0]
-            selected_indices = np.random.choice(class_indices, size=min(3, len(class_indices)), replace=False)
+            selected_indices = np.random.choice(class_indices, size=min(1, len(class_indices)), replace=False)
             
             for i, idx in enumerate(selected_indices):
                 ax = axs[plot_idx]
                 ax.plot(arr_original[idx], color='blue')
-                ax.set_title(f"Clase {class_label}")
+                ax.set_title(f"Class {class_label}")
                 ax.set_ylim(-1, 1)
-                ax.set_ylabel("Amplitud")
+                ax.set_ylabel("Amplitude [A.U.]")
                 ax.grid(True)
                 plot_idx += 1
                 if plot_idx >= 15:
@@ -426,7 +426,7 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
                 break
         
         for ax in axs:
-            ax.set_xlabel("Tiempo")
+            ax.set_xlabel("Time ()")
 
         plt.tight_layout()
         plt.show()
