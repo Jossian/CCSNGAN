@@ -414,7 +414,12 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
             
             for i, idx in enumerate(selected_indices):
                 ax = axs[plot_idx]
-                ax.plot(arr_original[idx], color='blue')
+                x = [i / 4096 for i in range(0, 256)]
+                x = [value - (53 / 4096) for value in x]
+
+                ax.plot(x,arr_original[idx], color='blue')
+                
+
                 ax.set_title(f"Class {class_label}")
                 ax.set_ylim(-1, 1)
                 ax.set_ylabel("Amplitude [A.U.]")
