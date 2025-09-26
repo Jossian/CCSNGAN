@@ -404,7 +404,7 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
           # --- NUEVA SECCIÓN: graficar 3 señales originales por clase en una sola figura 5x3 ---
         print("\n📉 Mostrando 3 señales originales por clase (en una sola figura 5x3)...")
         unique_classes = np.unique(labels)
-        fig, axs = plt.subplots(5, 1, figsize=(15, 10), sharex=True, sharey=True)
+        fig, axs = plt.subplots(5, 1, sharex=True, sharey=True)
         axs = axs.ravel()
         
         plot_idx = 0
@@ -414,7 +414,7 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
             
             for i, idx in enumerate(selected_indices):
                 ax = axs[plot_idx]
-                x = [i / 4096 for i in range(0, 256)]
+                x = [j / 4096 for j in range(0, 256)]
                 x = [value - (53 / 4096) for value in x]
 
                 ax.plot(x,arr_original[idx], color='blue')
