@@ -72,7 +72,7 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print(np.asarray((unique, counts)).T)
 
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
-
+plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
 
 #class_array = class_array.astype(np.int32)
