@@ -137,10 +137,11 @@ def plot_examples_5(data, classes, path):
         x = [value - (53 / 4096) for value in x]
         ax.plot(x, signal)
         ax.set_ylim(-1, 1)
-        ax.set_title(f"Class: {label}")
+        ax.set_title(f"Class: {int(label)}")
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Amplitude [A.U.]")
-
+    
+    plt.suptitle("Original waveforms", fontsize=16)
     plt.tight_layout()
     plt.savefig(path)
     plt.show()
