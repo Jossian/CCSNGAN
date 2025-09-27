@@ -143,7 +143,7 @@ def plot_examples_5(data, classes, path):
     
     plt.suptitle("Original waveforms", fontsize=16)
     plt.tight_layout()
-    plt.savefig(path)
+    plt.savefig(path+"/examples_org.png")
     plt.show()
     plt.close()
     
