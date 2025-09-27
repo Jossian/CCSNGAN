@@ -133,11 +133,13 @@ def plot_examples_5(data, classes, path):
     plt.figure(figsize=(10, 10))
     for i, (signal, label) in enumerate(zip(selected_signals, selected_labels)):
         ax = plt.subplot(len(selected_signals), 1, i + 1)
-        ax.plot(signal)
+        x = [j / 4096 for j in range(0, 256)]
+        x = [value - (53 / 4096) for value in x]
+        ax.plot(x, signal)
         ax.set_ylim(-1, 1)
-        ax.set_title(f"Clase: {label}")
-        ax.set_xlabel("Tiempo")
-        ax.set_ylabel("Amplitud [A.U.]")
+        ax.set_title(f"Class: {label}")
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Amplitude [A.U.]")
 
     plt.tight_layout()
     plt.savefig(path)
@@ -435,4 +437,6 @@ def compare_signal_datasets(arr_original: np.ndarray, arr_augmented: np.ndarray,
 
         plt.tight_layout()
         plt.show()
+        #plt.savefig(+f'/examples_plot')
+
         plot_pca_3d(arr_original,labels)
