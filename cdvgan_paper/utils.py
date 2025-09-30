@@ -130,6 +130,7 @@ def plot_examples_5(data, classes, path):
             selected_labels.append(c)
 
     # Graficar verticalmente
+    """
     plt.figure(figsize=(10, 10))
     for i, (signal, label) in enumerate(zip(selected_signals, selected_labels)):
         ax = plt.subplot(len(selected_signals), 1, i + 1)
@@ -145,8 +146,33 @@ def plot_examples_5(data, classes, path):
     plt.tight_layout()
     plt.savefig(path+"/examples_org.png")
     plt.show()
+    plt.close()"""
+    plt.figure(figsize=(10, 6))
+
+    # Definir un mapa de colores para las clases
+    colors = plt.cm.tab10.colors  # hasta 10 colores distintos
+
+    x = [j / 4096 - (53 / 4096) for j in range(256)]
+
+    for signal, label in zip(selected_signals, selected_labels):
+        color = colors[int(label) % len(colors)]  # asignar color por clase
+        plt.plot(x, signal, label=f"Class {int(label)}", color=color, alpha=0.7)
+
+    plt.ylim(-1, 1)
+    plt.title("Original waveforms", fontsize=16)
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude [A.U.]")
+
+    # Para que no repita etiquetas en la leyenda
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+
+    plt.tight_layout()
+    plt.savefig(path + "/examples_org.png")
+    plt.show()
     plt.close()
-    
+        
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import umap.umap_ as umap
