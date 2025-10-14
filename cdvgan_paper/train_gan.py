@@ -88,13 +88,13 @@ conditions = [
     (beta <= 0.02),
     
     # Clase 2: 0.02 < beta <= 0.04
-    (beta > 0.02) and (beta <= 0.04),
+    (beta > 0.02) & (beta <= 0.04),
     
     # Clase 3: 0.04 < beta <= 0.06
-    (beta > 0.04) and (beta <= 0.06),
+    (beta > 0.04) & (beta <= 0.06),
     
     # Clase 4: 0.06 < beta <= 0.17
-    (beta > 0.06) and (beta <= 0.17),
+    (beta > 0.06) & (beta <= 0.17),
     
     # Clase 5: beta > 0.17
     (beta > 0.17) 
