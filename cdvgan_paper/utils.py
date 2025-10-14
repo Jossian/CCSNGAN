@@ -212,7 +212,7 @@ def plot_signal_distribution_by_class(signals, labels, time=None):
             ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
             ax.set_ylabel('hD (cm)')
             ax.set_title(f'Class: {label}')
-            ax.set_ylim(1, -1)  # <- Escala Y uniforme
+            ax.set_ylim(-1, 1)  # <- Escala Y uniforme
             ax.grid(True)
             if idx == 0:
                 ax.legend(loc='upper right')
