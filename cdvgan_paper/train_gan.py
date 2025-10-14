@@ -73,8 +73,59 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5))
 signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
 
+##converting labels of richers dataset to plot examples
+# Extraer la columna de beta
+beta = parameters[:, 0]
+
+# --- 2. Definición de condiciones y valores de etiquetas ---
+
+# 2a. Definir las condiciones booleanas de las clases (en el orden lógico)
+# Nota: np.select evalúa las condiciones en orden.
+
+conditions = [
+    # Clase 1: beta <= 0.02
+    (beta <= 0.02),
+    
+    # Clase 2: 0.02 < beta <= 0.04
+    (beta > 0.02) & (beta <= 0.04),
+    
+    # Clase 3: 0.04 < beta <= 0.06
+    (beta > 0.04) & (beta <= 0.06),
+    
+    # Clase 4: 0.06 < beta <= 0.17
+    (beta > 0.06) & (beta <= 0.17),
+    
+    # Clase 5: beta > 0.17
+    (beta > 0.17) 
+]
+
+# 2b. Definir los valores que se asignarán a cada condición
+choices = [
+    1,  # Valor para Clase 1
+    2,  # Valor para Clase 2
+    3,  # Valor para Clase 3
+    4,  # Valor para Clase 4
+    5   # Valor para Clase 5
+]
+
+# --- 3. Aplicar np.select para crear el nuevo array de etiquetas ---
+
+# El argumento 'default' (aquí 0) se usa para cualquier valor que no cumpla ninguna condición.
+# Aunque el conjunto de condiciones cubre todos los números reales, es buena práctica incluirlo.
+new_labels = np.select(conditions, choices, default=0)
+
+# --- 4. Resultado ---
+print("Valores de Beta:")
+print(beta)
+print("\nNuevo Array de Etiquetas (new_labels):")
+print(new_labels)
+########################################################3
+
+
+
+
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(signals_richers,parameters[:,4],parameters[:,5])
+plot_signal_distribution_by_class(signals_richers,new_labels,parameters[:,1])
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
