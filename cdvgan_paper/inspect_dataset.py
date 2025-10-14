@@ -1,7 +1,8 @@
 import h5py
 import numpy as np
 import pandas as pd
-from scipy.signal import tukey, butter, filtfilt
+from scipy.signal import butter, filtfilt
+from scipy.signal.windows import tukey
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import random
