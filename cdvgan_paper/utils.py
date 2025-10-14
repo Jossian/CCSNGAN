@@ -8,7 +8,6 @@ import numpy as np
 from scipy.stats import skew, kurtosis, ks_2samp
 from scipy.signal import correlate
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import random
 
 from sklearn.decomposition import PCA
@@ -183,98 +182,46 @@ import seaborn as sns
 import numpy as np
 
 def plot_signal_distribution_by_class(signals, labels, time=None):
-    """
-    Genera un layout de subplots con 3 arriba y 2 abajo PERFECTAMENTE centrados,
-    mostrando la mediana, central 50% y central 95% de las señales,
-    con ejes Y uniformes para todos los subplots.
-    """
-    
-    unique_labels = np.unique(labels)
-    n_classes = len(unique_labels)
+        """
+        Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
+        con ejes Y uniformes para todos los subplots.
+        """
+        import numpy as np
+        import matplotlib.pyplot as plt
 
-    if n_classes == 0:
-        print("No hay clases para graficar.")
-        return
-    
-    # Esta función está diseñada para 5 clases (3 arriba, 2 abajo)
-    if n_classes > 5:
-        print(f"Advertencia: Se encontraron {n_classes} clases. Solo se mostrarán las primeras 5 en el layout 3+2.")
-        unique_labels = unique_labels[:5]
-        n_classes = 5
+        unique_labels = np.unique(labels)
+        n_classes = len(unique_labels)
 
-    if time is None:
-        time = np.arange(signals.shape[1])
-        xlabel_text = 'Time Index'
-    else:
-        xlabel_text = 'Time (s)'
+        if time is None:
+            time = np.arange(signals.shape[1])
 
+        fig, axes = plt.subplots(n_classes, 1, figsize=(8, 4 * n_classes), sharex=True)
+        if n_classes == 1:
+            axes = [axes]  # Asegura que axes sea iterable
 
-    fig = plt.figure(figsize=(15, 8))
-    
-    # 🌟 CORRECCIÓN CLAVE: Usar GridSpec(2, 5) para centrar perfectamente (5 columnas) 🌟
-    # La fila de arriba tendrá 3 subplots anchos (columnas 0-1, 2-3, 4-5) y la de abajo 2 (columnas 0-1 y 3-4)
-    gs = gridspec.GridSpec(2, 5, figure=fig, hspace=0.3, wspace=0.5) 
-    
-    # Calculamos los límites Y máximos para que sean uniformes en todos los gráficos
-    ymin = signals.min()
-    ymax = signals.max()
-    limit = max(abs(ymin), abs(ymax)) * 1.05 # 5% de margen
-    
-    # Creamos un subplot AX para cada clase
-    for idx, label in enumerate(unique_labels):
-        
-        # Lógica de posicionamiento en el GridSpec 2x5:
-        if idx == 0: # Clase 0: Col 0-1 (izquierda)
-            ax = fig.add_subplot(gs[0, 0:2]) 
-        elif idx == 1: # Clase 1: Col 2 (centro)
-            ax = fig.add_subplot(gs[0, 2])
-        elif idx == 2: # Clase 2: Col 3-4 (derecha)
-            ax = fig.add_subplot(gs[0, 3:])
-        elif idx == 3: # Clase 3: Fila 1, Col 0-1 (izquierda abajo, misma posición que Clase 0)
-            ax = fig.add_subplot(gs[1, 0:2])
-        elif idx == 4: # Clase 4: Fila 1, Col 3-4 (derecha abajo, misma posición que Clase 2)
-            ax = fig.add_subplot(gs[1, 3:])
-        else:
-             # Debería ser atrapado por la validación de n_classes
-             continue
-             
-        # --- Cálculo y Plotting (código sin cambios) ---
-        class_signals = signals[labels == label]
-        
-        if class_signals.size == 0:
-            continue
+        for idx, label in enumerate(unique_labels):
+            class_signals = signals[labels == label]
 
-        median = np.median(class_signals, axis=0)
-        p25 = np.percentile(class_signals, 25, axis=0)
-        p75 = np.percentile(class_signals, 75, axis=0)
-        p2_5 = np.percentile(class_signals, 2.5, axis=0)
-        p97_5 = np.percentile(class_signals, 97.5, axis=0)
+            median = np.median(class_signals, axis=0)
+            p25 = np.percentile(class_signals, 25, axis=0)
+            p75 = np.percentile(class_signals, 75, axis=0)
+            p2_5 = np.percentile(class_signals, 2.5, axis=0)
+            p97_5 = np.percentile(class_signals, 97.5, axis=0)
 
-        ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
-        ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
-        ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
-        
-        ax.set_ylabel('hD (cm)')
-        ax.set_title(f'Class: {label}')
-        
-        # Aplica límites Y uniformes y simétricos
-        ax.set_ylim(-limit, limit) 
-        ax.grid(True)
-        
-        # Leyenda solo en el primer subplot (Class: 0)
-        if idx == 0:
-            ax.legend(loc='upper left')
-            
-        # Etiquetas del eje X solo en los subplots de abajo
-        if idx >= 3:
-            ax.set_xlabel(xlabel_text)
+            ax = axes[idx]
+            ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
+            ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
+            ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
+            ax.set_ylabel('hD (cm)')
+            ax.set_title(f'Class: {label}')
+            ax.set_ylim(1, -1)  # <- Escala Y uniforme
+            ax.grid(True)
+            if idx == 0:
+                ax.legend(loc='upper right')
 
-    # El espacio central (gs[1, 2]) queda vacío, lo que logra el centrado. 
-    # Lo eliminamos para que no se vea el marco de la celda vacía.
-    if n_classes == 5:
-        fig.delaxes(fig.add_subplot(gs[1, 2])) 
-
-    plt.show()
+        axes[-1].set_xlabel('time (s)')
+        plt.tight_layout()
+        plt.show() 
 
 def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """
