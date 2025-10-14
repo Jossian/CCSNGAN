@@ -181,45 +181,92 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-def plot_signal_distribution_by_class(signals, labels, time=None):
-        """
-        Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
-        con ejes Y uniformes para todos los subplots.
-        """
 
-        unique_labels = np.unique(labels)
-        n_classes = len(unique_labels)
+def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
+    """
+    Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
+    con ejes Y uniformes. Agrega líneas verticales para t=0 y t=tbounce.
+    """
 
-        if time is None:
-            time = np.arange(signals.shape[1])
+    unique_labels = np.unique(labels)
+    n_classes = len(unique_labels)
 
-        fig, axes = plt.subplots(n_classes, 1, figsize=(8, 4 * n_classes), sharex=True)
-        if n_classes == 1:
-            axes = [axes]  # Asegura que axes sea iterable
+    if time is None:
+        time = np.arange(signals.shape[1])
+    
+    # 🌟 CORRECCIÓN DE LÍMITES Y UNIFORMES 🌟
+    # Si bien usaste ax.set_ylim(-1, 1), es mejor calcularlo para robustez.
+    # Pero mantendremos el -1, 1 para ser consistentes con tu código original.
+    Y_LIMIT = 1.05 * np.max(np.abs(signals)) 
+    # Usaremos el límite fijo de 1 si los datos lo permiten, o el calculado si se excede.
+    if Y_LIMIT < 1.0: Y_LIMIT = 1.0
+    
+    # Crea el layout simple de N filas x 1 columna (compartiendo el eje X)
+    fig, axes = plt.subplots(n_classes, 1, figsize=(10, 3.5 * n_classes), sharex=True)
+    if n_classes == 1:
+        axes = [axes]  # Asegura que axes sea iterable
 
-        for idx, label in enumerate(unique_labels):
-            class_signals = signals[labels == label]
+    for idx, label in enumerate(unique_labels):
+        ax = axes[idx]
+        
+        # Filtra las señales y los tiempos de rebote para la clase actual
+        class_signals = signals[labels == label]
+        class_tbounce = tbounce[labels == label]
+        
+        # Evita errores si no hay datos
+        if class_signals.size == 0:
+             ax.set_title(f'Class: {label} (No data)')
+             continue
 
-            median = np.median(class_signals, axis=0)
-            p25 = np.percentile(class_signals, 25, axis=0)
-            p75 = np.percentile(class_signals, 75, axis=0)
-            p2_5 = np.percentile(class_signals, 2.5, axis=0)
-            p97_5 = np.percentile(class_signals, 97.5, axis=0)
+        # Cálculo de percentiles (median, 50%, 95%)
+        median = np.median(class_signals, axis=0)
+        p25 = np.percentile(class_signals, 25, axis=0)
+        p75 = np.percentile(class_signals, 75, axis=0)
+        p2_5 = np.percentile(class_signals, 2.5, axis=0)
+        p97_5 = np.percentile(class_signals, 97.5, axis=0)
+        
+        # Calcula el tiempo de rebote promedio para esta clase
+        median_tbounce = np.median(class_tbounce)
 
-            ax = axes[idx]
-            ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
-            ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
-            ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
-            ax.set_ylabel('hD (cm)')
-            ax.set_title(f'Class: {label}')
-            ax.set_ylim(-1, 1)  # <- Escala Y uniforme
-            ax.grid(True)
-            if idx == 0:
-                ax.legend(loc='upper right')
+        # Plotting
+        ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
+        ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
+        ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
+        
+        # 🌟 AGREGAR LÍNEAS VERTICALES (core bounce) 🌟
+        
+        # 1. Línea vertical en t=0 (Inicio de la simulación o colapso)
+        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
 
-        axes[-1].set_xlabel('time (s)')
-        plt.tight_layout()
-        plt.show() 
+        # 2. Línea vertical en t = 0 + tb (Rebote del núcleo)
+        # Asumiendo que 'time' representa el tiempo después del inicio del colapso
+        # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
+        ax.axvline(
+            x=median_tbounce, 
+            color='red', 
+            linestyle='-', 
+            linewidth=1.5, 
+            label=f't = $t_b$ ({median_tbounce:.3f})'
+        )
+
+        ax.set_ylabel('hD (cm)')
+        ax.set_title(f'Class: {label}')
+        
+        # Aplica límites Y uniformes
+        ax.set_ylim(-Y_LIMIT, Y_LIMIT)
+        ax.grid(True)
+        
+        # Leyenda (incluyendo las líneas axvline)
+        if idx == 0:
+            # Combina todas las leyendas: median, 50%, 95%, t=0, t=tb
+            handles, labels_list = ax.get_legend_handles_labels()
+            # Ordena la leyenda para poner los rangos primero
+            order = [0, 1, 2, 3, 4] # Orden típico: 95%, 50%, Median, t=0, t=tb
+            ax.legend([handles[i] for i in order], [labels_list[i] for i in order], loc='upper right', fontsize='small')
+
+    axes[-1].set_xlabel('Time (s)')
+    plt.tight_layout()
+    plt.show()
 
 def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """
