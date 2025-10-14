@@ -186,8 +186,6 @@ def plot_signal_distribution_by_class(signals, labels, time=None):
         Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
         con ejes Y uniformes para todos los subplots.
         """
-        import numpy as np
-        import matplotlib.pyplot as plt
 
         unique_labels = np.unique(labels)
         n_classes = len(unique_labels)
