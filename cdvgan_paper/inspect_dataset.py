@@ -36,79 +36,77 @@ WINDOW_AFTER_MS = 49.55e-3  # 49.55 ms
 signals_processed = []
 labels = []
 
-"""with h5py.File(fname, "r") as f:
-"""
-f=file_in_memory
-waveforms_group = f["waveforms"]
-reduced_data_group = f["reduced_data"]
-waveform_names = list(waveforms_group.keys())
-print(f"Número total de señales: {len(waveform_names)}")
+with h5py.File(file_in_memory, "r") as f:
+    waveforms_group = f["waveforms"]
+    reduced_data_group = f["reduced_data"]
+    waveform_names = list(waveforms_group.keys())
+    print(f"Número total de señales: {len(waveform_names)}")
 
-# Extraer todos los parámetros de reduced_data
-beta_all = reduced_data_group["beta1_IC_b"][:]
-EOS_all = reduced_data_group["EOS"][:]
-A_all = reduced_data_group["A(km)"][:]
-omega0_all = reduced_data_group["omega_0(rad|s)"][:]
+    # Extraer todos los parámetros de reduced_data
+    beta_all = reduced_data_group["beta1_IC_b"][:]
+    EOS_all = reduced_data_group["EOS"][:]
+    A_all = reduced_data_group["A(km)"][:]
+    omega0_all = reduced_data_group["omega_0(rad|s)"][:]
 
-for i, name in enumerate(waveform_names):
-    grp = waveforms_group[name]
-    time = np.array(grp["t-tb(s)"][:])           # segundos, centrado en bounce
-    hD = np.array(grp["strain*dist(cm)"][:])     # strain * distancia (cm)
+    for i, name in enumerate(waveform_names):
+        grp = waveforms_group[name]
+        time = np.array(grp["t-tb(s)"][:])           # segundos, centrado en bounce
+        hD = np.array(grp["strain*dist(cm)"][:])     # strain * distancia (cm)
 
-    # --- Tomar parámetros de reduced_data ---
-    beta1_IC_b = beta_all[i]
-    EOS = EOS_all[i].decode("utf-8") if isinstance(EOS_all[i], bytes) else EOS_all[i]
-    A = A_all[i]
-    omega0 = omega0_all[i]
+        # --- Tomar parámetros de reduced_data ---
+        beta1_IC_b = beta_all[i]
+        EOS = EOS_all[i].decode("utf-8") if isinstance(EOS_all[i], bytes) else EOS_all[i]
+        A = A_all[i]
+        omega0 = omega0_all[i]
 
-    # --- Filtrar señales con beta1_IC_b <= 0 ---
-    if beta1_IC_b <= 0:
-        continue
+        # --- Filtrar señales con beta1_IC_b <= 0 ---
+        if beta1_IC_b <= 0:
+            continue
 
-    # --- Aplicar ventana Tukey ---
-    window = tukey(len(hD), alpha=ALPHA_TUKEY)
-    hD_win = hD * window
+        # --- Aplicar ventana Tukey ---
+        window = tukey(len(hD), alpha=ALPHA_TUKEY)
+        hD_win = hD * window
 
-    # --- Recorte temporal alrededor del bounce ---
-    mask = (time >= -WINDOW_BEFORE_MS) & (time <= WINDOW_AFTER_MS)
-    if not np.any(mask):
-        continue
+        # --- Recorte temporal alrededor del bounce ---
+        mask = (time >= -WINDOW_BEFORE_MS) & (time <= WINDOW_AFTER_MS)
+        if not np.any(mask):
+            continue
 
-    time_crop = time[mask]
-    h_crop = hD_win[mask]
+        time_crop = time[mask]
+        h_crop = hD_win[mask]
 
-    # --- Interpolación lineal a N_SAMPLES_FINAL puntos ---
-    t_new = np.linspace(time_crop[0], time_crop[-1], N_SAMPLES_FINAL)
-    interp_func = interp1d(time_crop, h_crop, kind="linear", fill_value="extrapolate")
-    h_interp = interp_func(t_new)
+        # --- Interpolación lineal a N_SAMPLES_FINAL puntos ---
+        t_new = np.linspace(time_crop[0], time_crop[-1], N_SAMPLES_FINAL)
+        interp_func = interp1d(time_crop, h_crop, kind="linear", fill_value="extrapolate")
+        h_interp = interp_func(t_new)
 
-    # --- Filtro Butterworth pasa bajas ---
-    b, a = butter(ORDER_BUTTER, 0.25)
-    h_filt = filtfilt(b, a, h_interp)
+        # --- Filtro Butterworth pasa bajas ---
+        b, a = butter(ORDER_BUTTER, 0.25)
+        h_filt = filtfilt(b, a, h_interp)
 
-    # --- Atenuación ---
-    h_final = h_filt * ATTENUATION
+        # --- Atenuación ---
+        h_final = h_filt * ATTENUATION
 
-    # --- Normalización ---
-    mean_val = np.mean(h_final)
-    std_val = np.std(h_final)
-    if std_val < 1e-8:
-        continue
-    h_norm = (h_final - mean_val) / std_val
+        # --- Normalización ---
+        mean_val = np.mean(h_final)
+        std_val = np.std(h_final)
+        if std_val < 1e-8:
+            continue
+        h_norm = (h_final - mean_val) / std_val
 
-    signals_processed.append(h_norm)
+        signals_processed.append(h_norm)
 
-    tb = reduced_data_group["tbounce(s)"][i]  # tiempo del core bounce en segundos
+        tb = reduced_data_group["tbounce(s)"][i]  # tiempo del core bounce en segundos
 
-    labels.append({
-        "name": name,
-        "EOS": EOS,
-        "A(km)": A,
-        "omega_0(rad/s)": omega0,
-        "beta1_IC_b": beta1_IC_b,
-        "tbounce_s": tb,       # <-- agregado
-        "ndata": len(time)
-    })
+        labels.append({
+            "name": name,
+            "EOS": EOS,
+            "A(km)": A,
+            "omega_0(rad/s)": omega0,
+            "beta1_IC_b": beta1_IC_b,
+            "tbounce_s": tb,       # <-- agregado
+            "ndata": len(time)
+        })
 
 # === Convertir a DataFrames y guardar ===
 signals_df = pd.DataFrame(signals_processed)
