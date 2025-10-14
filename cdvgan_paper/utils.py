@@ -8,6 +8,8 @@ import numpy as np
 from scipy.stats import skew, kurtosis, ks_2samp
 from scipy.signal import correlate
 import matplotlib.pyplot as plt
+
+import matplotlib.gridspec as gridspec
 import random
 
 from sklearn.decomposition import PCA
@@ -182,46 +184,60 @@ import seaborn as sns
 import numpy as np
 
 def plot_signal_distribution_by_class(signals, labels, time=None):
-        """
-        Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
-        con ejes Y uniformes para todos los subplots.
-        """
-        import numpy as np
-        import matplotlib.pyplot as plt
+    """
+    Genera un layout de subplots con 3 arriba y 2 abajo centrados,
+    mostrando la mediana, central 50% y central 95% de las señales,
+    con ejes Y uniformes para todos los subplots.
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
 
-        unique_labels = np.unique(labels)
-        n_classes = len(unique_labels)
+    unique_labels = np.unique(labels)
+    n_classes = len(unique_labels)
 
-        if time is None:
-            time = np.arange(signals.shape[1])
+    if n_classes > 5:
+        raise ValueError("Esta función solo maneja hasta 5 clases para el layout 3+2.")
 
-        fig, axes = plt.subplots(n_classes, 1, figsize=(8, 4 * n_classes), sharex=True)
-        if n_classes == 1:
-            axes = [axes]  # Asegura que axes sea iterable
+    if time is None:
+        time = np.arange(signals.shape[1])
 
-        for idx, label in enumerate(unique_labels):
-            class_signals = signals[labels == label]
+    fig = plt.figure(figsize=(15, 8))
+    gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.3, wspace=0.3)
 
-            median = np.median(class_signals, axis=0)
-            p25 = np.percentile(class_signals, 25, axis=0)
-            p75 = np.percentile(class_signals, 75, axis=0)
-            p2_5 = np.percentile(class_signals, 2.5, axis=0)
-            p97_5 = np.percentile(class_signals, 97.5, axis=0)
+    # Define qué celda ocupará cada subplot según el layout
+    positions = [
+        gs[0, 0], gs[0, 1], gs[0, 2],  # 3 arriba
+        gs[1, 0:2], gs[1, 1:3]          # 2 abajo centradas
+    ]
 
-            ax = axes[idx]
-            ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
-            ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
-            ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
-            ax.set_ylabel('hD (cm)')
-            ax.set_title(f'Class: {label}')
-            ax.set_ylim(-13, 7)  # <- Escala Y uniforme
-            ax.grid(True)
-            if idx == 0:
-                ax.legend(loc='upper right')
+    for idx, label in enumerate(unique_labels):
+        if idx >= 5:
+            break  # Solo hasta 5 subplots
+        ax = fig.add_subplot(positions[idx])
 
-        axes[-1].set_xlabel('time (s)')
-        plt.tight_layout()
-        plt.show() 
+        class_signals = signals[labels == label]
+        median = np.median(class_signals, axis=0)
+        p25 = np.percentile(class_signals, 25, axis=0)
+        p75 = np.percentile(class_signals, 75, axis=0)
+        p2_5 = np.percentile(class_signals, 2.5, axis=0)
+        p97_5 = np.percentile(class_signals, 97.5, axis=0)
+
+        ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
+        ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
+        ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
+        ax.set_ylabel('hD (cm)')
+        ax.set_title(f'Class: {label}')
+        ax.set_ylim(1, -1)  # Escala Y uniforme
+        ax.grid(True)
+        if idx == 0:
+            ax.legend(loc='upper right')
+
+    # Solo en el último subplot poner xlabel
+    positions[n_classes-1].set_xlabel('time (s)')
+
+    plt.show()
+
 
 def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """
