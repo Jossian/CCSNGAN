@@ -72,6 +72,7 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print(np.asarray((unique, counts)).T)
 parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5))
 signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
+time_interp=np.loadtxt(f'{ruta_proyecto}/data/time_interpolated.csv', delimiter=',',skiprows=1)
 
 ##converting labels of richers dataset to plot examples
 # Extraer la columna de beta
@@ -87,13 +88,13 @@ conditions = [
     (beta <= 0.02),
     
     # Clase 2: 0.02 < beta <= 0.04
-    (beta > 0.02) & (beta <= 0.04),
+    (beta > 0.02) and (beta <= 0.04),
     
     # Clase 3: 0.04 < beta <= 0.06
-    (beta > 0.04) & (beta <= 0.06),
+    (beta > 0.04) and (beta <= 0.06),
     
     # Clase 4: 0.06 < beta <= 0.17
-    (beta > 0.06) & (beta <= 0.17),
+    (beta > 0.06) and (beta <= 0.17),
     
     # Clase 5: beta > 0.17
     (beta > 0.17) 
@@ -113,7 +114,8 @@ choices = [
 # El argumento 'default' (aquí 0) se usa para cualquier valor que no cumpla ninguna condición.
 # Aunque el conjunto de condiciones cubre todos los números reales, es buena práctica incluirlo.
 new_labels = np.select(conditions, choices, default=0)
-
+print("unique labels richers: ")
+print(np.unique(new_labels))
 # --- 4. Resultado ---
 print("Valores de Beta:")
 print(beta)
@@ -125,7 +127,7 @@ print(new_labels)
 
 
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(signals_richers,new_labels,parameters[:,1])
+plot_signal_distribution_by_class(signals_richers,new_labels,parameters[:,1],time=time_interp)
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 

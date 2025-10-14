@@ -19,7 +19,7 @@ file_in_memory = BytesIO(r.content)
 # === Rutas del proyecto (Ajuste necesario para notebooks o scripts) ===
 # NOTA: En un script o notebook, la ruta_proyecto debe definirse manualmente
 # si no existe un archivo __file__. Aquí lo ajustaremos para ser independiente.
-"""try:
+try:
     ruta_actual = Path(__file__).resolve()
     ruta_proyecto = ruta_actual.parents[0]
 except NameError:
@@ -30,8 +30,7 @@ ruta_data = ruta_proyecto / "data"
 ruta_data.mkdir(exist_ok=True) # Crea el directorio 'data' si no existe
     
 if str(ruta_proyecto) not in sys.path:
-    sys.path.insert(0, str(ruta_proyecto))"""
-ruta_data="D:\Documentos\Doctorado\CDVGAN\cdvgan_paper\data"
+    sys.path.insert(0, str(ruta_proyecto))
 
 # === Parámetros de preprocesamiento ===
 ALPHA_TUKEY = 0.1
