@@ -179,7 +179,7 @@ if time_interpolated is not None:
                 color='red', 
                 linestyle='-', 
                 linewidth=1.5, 
-                label=f't = $t_b$ ({label['tbounce_s']:.3f})'
+                label=f't = $t_b$ ({label["tbounce_s"]:.3f})'
             )
 
             # Añadir leyenda
