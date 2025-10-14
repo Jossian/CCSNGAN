@@ -70,9 +70,11 @@ class_array_orig = class_array_orig - 1
 unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print("Classes, counts  originales del dataset: ")
 #print(np.asarray((unique, counts)).T)
-tbounce=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=5)
+parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5))
+signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
+
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(data_orig,class_array_orig,tbounce)
+plot_signal_distribution_by_class(signals_richers,parameters[:,4],parameters[:,5])
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
