@@ -15,7 +15,7 @@ import time
 
 
 from .gan_models import choose_gan
-from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, plot_examples_5, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d
+from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, plot_examples_5, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d, plot_signal_distribution_by_class
 from .consistency_test import consistency_test
 import pickle
 import json
@@ -70,7 +70,7 @@ class_array_orig = class_array_orig - 1
 unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print("Classes, counts  originales del dataset: ")
 #print(np.asarray((unique, counts)).T)
-
+plot_signal_distribution_by_class(data_orig,class_array_orig)
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
