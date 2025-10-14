@@ -169,8 +169,19 @@ if time_interpolated is not None:
             ax.grid(True, alpha=0.3)
             
             # Línea vertical para el centro del bounce (t-tb=0)
-            ax.axvline(0, color='r', linestyle='--', lw=0.8, alpha=0.7, label="t-tb = 0 ms (Bounce)")
-            
+            ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
+
+            # 2. Línea vertical en t = 0 + tb (Rebote del núcleo)
+            # Asumiendo que 'time' representa el tiempo después del inicio del colapso
+            # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
+            ax.axvline(
+                x=label['tbounce_s'], 
+                color='red', 
+                linestyle='-', 
+                linewidth=1.5, 
+                label=f't = $t_b$ ({label['tbounce_s']:.3f})'
+            )
+
             # Añadir leyenda
             ax.legend(loc='upper right', fontsize=7)
 
