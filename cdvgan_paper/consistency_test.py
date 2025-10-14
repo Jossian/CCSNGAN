@@ -244,7 +244,6 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Classes, counts for generation: ")
     print(np.asarray((unique_gen, counts_gen)).T)
     print("label_orig shape: ",label_orig.shape)  # esto debería mostrar algo como (N,)
-    plot_signal_distribution_by_class(dataset_orig,label_orig)
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
     #N = 300  # muestras por clase
