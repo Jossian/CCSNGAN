@@ -232,6 +232,47 @@ def plot_histograms(results,classes, bins=50):
     plt.tight_layout()
     plt.show()
 ######################################################################################
+def plot_signal_distribution_by_class(signals, labels, time=None):
+        """
+        Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
+        con ejes Y uniformes para todos los subplots.
+        """
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        unique_labels = np.unique(labels)
+        n_classes = len(unique_labels)
+
+        if time is None:
+            time = np.arange(signals.shape[1])
+
+        fig, axes = plt.subplots(n_classes, 1, figsize=(8, 4 * n_classes), sharex=True)
+        if n_classes == 1:
+            axes = [axes]  # Asegura que axes sea iterable
+
+        for idx, label in enumerate(unique_labels):
+            class_signals = signals[labels == label]
+
+            median = np.median(class_signals, axis=0)
+            p25 = np.percentile(class_signals, 25, axis=0)
+            p75 = np.percentile(class_signals, 75, axis=0)
+            p2_5 = np.percentile(class_signals, 2.5, axis=0)
+            p97_5 = np.percentile(class_signals, 97.5, axis=0)
+
+            ax = axes[idx]
+            ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
+            ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
+            ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
+            ax.set_ylabel('hD (cm)')
+            ax.set_title(f'Class: {label}')
+            ax.set_ylim(-13, 7)  # <- Escala Y uniforme
+            ax.grid(True)
+            if idx == 0:
+                ax.legend(loc='upper right')
+
+        axes[-1].set_xlabel('time (s)')
+        plt.tight_layout()
+        plt.show() 
 
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Starting consistency test...")
@@ -243,7 +284,7 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Classes, counts for generation: ")
     print(np.asarray((unique_gen, counts_gen)).T)
     print("label_orig shape: ",label_orig.shape)  # esto debería mostrar algo como (N,)
-
+    plot_signal_distribution_by_class(dataset_orig,label_orig)
     # ---- CONFIGURACIÓN ----
     np.random.seed(42)
     #N = 300  # muestras por clase
