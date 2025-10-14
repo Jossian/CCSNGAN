@@ -193,7 +193,7 @@ def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
 
     if time is None:
         time = [j / 4096 for j in range(0, 256)]
-        time = [value - (53 / 4096) for value in x]
+        time = [value - (53 / 4096) for value in time]
     
     # 🌟 CORRECCIÓN DE LÍMITES Y UNIFORMES 🌟
     # Si bien usaste ax.set_ylim(-1, 1), es mejor calcularlo para robustez.
