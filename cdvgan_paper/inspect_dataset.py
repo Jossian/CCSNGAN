@@ -83,7 +83,7 @@ with h5py.File(file_in_memory, "r") as f:
     A_all = reduced_data_group["A(km)"][:]
     omega0_all = reduced_data_group["omega_0(rad|s)"][:]
     tbounce_all = reduced_data_group["tbounce(s)"][:] # Extraer tbounce aquí
-
+    t_postbounce_end_all=reduced_data_group["t_postbounce_end(s)"][:]
     for i, name in enumerate(waveform_names):
         grp = waveforms_group[name]
         time = np.array(grp["t-tb(s)"][:])      # segundos, centrado en bounce
@@ -95,7 +95,7 @@ with h5py.File(file_in_memory, "r") as f:
         A = A_all[i]
         omega0 = omega0_all[i]
         tb = tbounce_all[i] # Usar el array extraído
-
+        tpbe=t_postbounce_end_all[i]
         # --- Filtrar señales con beta1_IC_b <= 0 ---
         if beta1_IC_b <= 0:
             continue
@@ -137,6 +137,7 @@ with h5py.File(file_in_memory, "r") as f:
 
         signals_processed.append(h_norm)
 
+        tbe=find_tbe(time_interpolated,h_norm)
         # --- Guardar etiquetas ---
         labels.append({
             "name": name,
@@ -144,8 +145,8 @@ with h5py.File(file_in_memory, "r") as f:
             "A(km)": A,
             "omega_0(rad/s)": omega0,
             "beta1_IC_b": beta1_IC_b,
-            "tbounce_s": tb,     
-            "ndata": len(time)
+            "tbounce_s": tbe,     
+            "t_postbounce":tpbe
         })
 
 # === Convertir a DataFrames y guardar ===

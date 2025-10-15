@@ -182,7 +182,7 @@ import seaborn as sns
 import numpy as np
 
 
-def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
+def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
     """
     Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
     con ejes Y uniformes. Agrega líneas verticales para t=0 y t=tbounce.
@@ -213,7 +213,8 @@ def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
         # Filtra las señales y los tiempos de rebote para la clase actual
         class_signals = signals[labels == label]
         class_tbounce = tbounce[labels == label]
-        
+        class_tbpostounce = tpbe[labels == label]
+
         # Evita errores si no hay datos
         if class_signals.size == 0:
              ax.set_title(f'Class: {label} (No data)')
@@ -228,6 +229,7 @@ def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
         
         # Calcula el tiempo de rebote promedio para esta clase
         median_tbounce = np.median(class_tbounce)
+        median_tpostbounce = np.median(class_tbpostounce)
 
         # Plotting
         ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
@@ -245,9 +247,17 @@ def plot_signal_distribution_by_class(signals, labels, tbounce, time=None):
         ax.axvline(
             x=median_tbounce, 
             color='red', 
-            linestyle='-', 
+            linestyle='--', 
             linewidth=1.5, 
             label=f't = $t_b$ ({median_tbounce:.3f})'
+        )
+
+        ax.axvline(
+            x=median_tpostbounce, 
+            color='blue', 
+            linestyle='--', 
+            linewidth=1.5, 
+            label=f't = $t_pbe$ ({median_tpostbounce:.3f})'
         )
 
         ax.set_ylabel('hD (cm)')
