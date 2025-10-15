@@ -229,7 +229,6 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
         
         # Calcula el tiempo de rebote promedio para esta clase
         median_tbounce = np.nanmedian(class_tbounce)
-        median_tpostbounce = np.median(class_tbpostounce)
         median_tpostbounce = np.nanmedian(class_tbpostounce) 
 
         # Plotting
@@ -252,14 +251,14 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
             linewidth=1.5, 
             label=f't = $t_b$ ({median_tbounce:.3f})'
         )
-        """
+        
         ax.axvline(
             x=median_tpostbounce, 
             color='blue', 
             linestyle='--', 
             linewidth=1.5, 
             label=f't = $t_pbe$ ({median_tpostbounce:.3f})'
-        )"""
+        )
 
         ax.set_ylabel('hD (cm)')
         ax.set_title(f'Class: {label}')
