@@ -147,7 +147,7 @@ print("Archivos: signals_preprocessed.csv, labels.csv, time_interpolated.csv")
 
 if time_interpolated is not None:
     # Convertir el tiempo de segundos a milisegundos para la gráfica
-    t_plot_ms = time_interpolated * 1e3 
+    #t_plot_ms = time_interpolated * 1e3 
 
     num_examples = min(5, len(signals_df))
     if num_examples > 0:
@@ -159,12 +159,12 @@ if time_interpolated is not None:
             ax = plt.subplot(num_examples, 1, i)
             
             # Usar el array de tiempo guardado
-            ax.plot(t_plot_ms, signals_df.iloc[idx].values.astype(float), lw=1)
+            ax.plot(time_interpolated, signals_df.iloc[idx].values.astype(float), lw=1)
             
             label = labels_df.iloc[idx]
             
             ax.set_title(f"{label['name']} | EOS={label['EOS']} | A={label['A(km)']} km | β={label['beta1_IC_b']:.3f}", fontsize=9)
-            ax.set_xlabel("Tiempo (ms)")
+            ax.set_xlabel("Tiempo (s)")
             ax.set_ylabel("Amplitud normalizada")
             ax.grid(True, alpha=0.3)
             
@@ -175,7 +175,7 @@ if time_interpolated is not None:
             # Asumiendo que 'time' representa el tiempo después del inicio del colapso
             # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
             ax.axvline(
-                x=label['tbounce_s']*1000, 
+                x=label['tbounce_s'], 
                 color='red', 
                 linestyle='-', 
                 linewidth=1.5, 
