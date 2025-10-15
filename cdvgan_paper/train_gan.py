@@ -84,18 +84,18 @@ labels_df_temp = pd.read_csv(f'{ruta_proyecto}/data/labels.csv', usecols=COLS_TO
 parameters = labels_df_temp.values 
 
 
-signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
-time_interp=np.loadtxt(f'{ruta_proyecto}/data/time_interpolated.csv', delimiter=',',skiprows=1)
+#signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
+#time_interp=np.loadtxt(f'{ruta_proyecto}/data/time_interpolated.csv', delimiter=',',skiprows=1)
 
 ##converting labels of richers dataset to plot examples
 # Extraer la columna de beta
 #beta = parameters[:, 0]
-beta = labels_df_temp['beta1_IC_b'].values
+#beta = labels_df_temp['beta1_IC_b'].values
 # --- 2. Definición de condiciones y valores de etiquetas ---
 
 # 2a. Definir las condiciones booleanas de las clases (en el orden lógico)
 # Nota: np.select evalúa las condiciones en orden.
-
+"""
 conditions = [
     # Clase 1: beta <= 0.02
     (beta <= 0.02),
@@ -134,13 +134,13 @@ print("Valores de Beta:")
 print(beta)
 print("\nNuevo Array de Etiquetas (new_labels):")
 print(new_labels)
-########################################################3
+########################################################3"""
 
 
 
 
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(signals_richers,new_labels,labels_df_temp['tbounce_s'].values,labels_df_temp['t_postbounce'].values,time=time_interp)
+plot_signal_distribution_by_class(data_orig,class_array_orig)
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 

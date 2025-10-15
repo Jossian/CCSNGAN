@@ -108,6 +108,30 @@ def plot_examples(data, classes, path):
     plt.savefig(path)
     plt.show()
     plt.close()
+def find_tbe(time_array, signal_median, n_crossings=2): # <--- CAMBIO CLAVE A n_crossings=2
+    """
+    Encuentra el tiempo del segundo cruce por cero (tbe) de la señal
+    después del core bounce (t=0), siguiendo el ejemplo de la Figura 4.
+    """
+    
+    # 1. Nos enfocamos solo en el tiempo post-bounce (t >= 0)
+    post_bounce_mask = time_array >= 0
+    t_post = time_array[post_bounce_mask]
+    s_post = signal_median[post_bounce_mask]
+    
+    # 2. Encontrar los cruces por cero (cuando el signo cambia)
+    zero_crossings_indices = np.where(np.diff(np.sign(s_post)))[0]
+    
+    if len(zero_crossings_indices) < n_crossings:
+        # Si no se encuentra el N-ésimo cruce, devolvemos NaN.
+        return np.nan 
+    
+    # 3. El índice del N-ésimo cruce por cero (ahora el segundo)
+    tbe_index = zero_crossings_indices[n_crossings - 1]
+    
+    # 4. Devolver el tiempo (en segundos)
+    return t_post[tbe_index]
+
 
 
 def plot_examples_5(data, classes, path):
@@ -182,7 +206,7 @@ import seaborn as sns
 import numpy as np
 
 
-def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
+def plot_signal_distribution_by_class(signals, labels, time=None):
     """
     Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
     con ejes Y uniformes. Agrega líneas verticales para t=0 y t=tbounce.
@@ -212,8 +236,8 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
         
         # Filtra las señales y los tiempos de rebote para la clase actual
         class_signals = signals[labels == label]
-        class_tbounce = tbounce[labels == label]
-        class_tbpostounce = tpbe[labels == label]
+        #class_tbounce = tbounce[labels == label]
+        #class_tbpostounce = tpbe[labels == label]
 
         # Evita errores si no hay datos
         if class_signals.size == 0:
@@ -228,7 +252,8 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
         p97_5 = np.percentile(class_signals, 97.5, axis=0)
         
         # Calcula el tiempo de rebote promedio para esta clase
-        median_tbounce = np.nanmedian(class_tbounce)
+
+        median_tbounce = find_tbe(time,median)
 
         # Plotting
         ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
