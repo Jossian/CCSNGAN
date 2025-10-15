@@ -175,7 +175,7 @@ if time_interpolated is not None:
             # Asumiendo que 'time' representa el tiempo después del inicio del colapso
             # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
             ax.axvline(
-                x=label['tbounce_s'], 
+                x=label['tbounce_s']*1000, 
                 color='red', 
                 linestyle='-', 
                 linewidth=1.5, 
