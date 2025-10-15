@@ -12,7 +12,7 @@ ruta_proyecto = ruta_actual.parents[0]  # .parents[0] es el archivo mismo, .pare
 if str(ruta_proyecto) not in sys.path:
     sys.path.insert(0, str(ruta_proyecto))
 import time
-
+import pandas as pd
 
 from .gan_models import choose_gan
 from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, plot_examples_5, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d, plot_signal_distribution_by_class
@@ -72,25 +72,25 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print(np.asarray((unique, counts)).T)
 #parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5,6))
 
-converters_dict = {
-    # Index 2 corresponds to the 3rd column requested (usecols=(4, 5, 6))
-    2: lambda s: np.nan if s == b'' else float(s) 
-}
+# Column names corresponding to indices 4, 5, and 6 in your labels.csv
+# Assuming the order is: beta1_IC_b (4), tbounce_s (5), tbe_calculated_s (6)
+COLS_TO_LOAD = ["beta1_IC_b", "tbounce_s", "t_postbounce"]
 
-parameters = np.loadtxt(
-    f'{ruta_proyecto}/data/labels.csv', 
-    delimiter=',',
-    skiprows=1,
-    usecols=(4, 5, 6),
-    converters=converters_dict 
-)
+# 1. Load the CSV into a temporary Pandas DataFrame, only reading the necessary columns.
+labels_df_temp = pd.read_csv(f'{ruta_proyecto}/data/labels.csv', usecols=COLS_TO_LOAD)
+
+# 2. Convert the DataFrame (including the NaNs converted by Pandas) into a NumPy array.
+# The NaNs will now be stored as valid numpy.nan float values.
+parameters = labels_df_temp.values 
+
+
 signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
 time_interp=np.loadtxt(f'{ruta_proyecto}/data/time_interpolated.csv', delimiter=',',skiprows=1)
 
 ##converting labels of richers dataset to plot examples
 # Extraer la columna de beta
-beta = parameters[:, 0]
-
+#beta = parameters[:, 0]
+beta = labels_df_temp['beta1_IC_b'].values
 # --- 2. Definición de condiciones y valores de etiquetas ---
 
 # 2a. Definir las condiciones booleanas de las clases (en el orden lógico)
@@ -140,7 +140,7 @@ print(new_labels)
 
 
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(signals_richers,new_labels,parameters[:,1],parameters[:,2],time=time_interp)
+plot_signal_distribution_by_class(signals_richers,new_labels,labels_df_temp['tbounce_s'].values,labels_df_temp['t_postbounce'].values,time=time_interp)
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
