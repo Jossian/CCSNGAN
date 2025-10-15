@@ -229,7 +229,6 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
         
         # Calcula el tiempo de rebote promedio para esta clase
         median_tbounce = np.nanmedian(class_tbounce)
-        median_tpostbounce = np.nanmedian(class_tbpostounce) 
 
         # Plotting
         ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
@@ -239,7 +238,7 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
         # 🌟 AGREGAR LÍNEAS VERTICALES (core bounce) 🌟
         
         # 1. Línea vertical en t=0 (Inicio de la simulación o colapso)
-        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
+        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label=f'$t_b$')
 
         # 2. Línea vertical en t = 0 + tb (Rebote del núcleo)
         # Asumiendo que 'time' representa el tiempo después del inicio del colapso
@@ -249,17 +248,9 @@ def plot_signal_distribution_by_class(signals, labels, tbounce,tpbe, time=None):
             color='red', 
             linestyle='--', 
             linewidth=1.5, 
-            label=f't = $t_b$ ({median_tbounce:.3f})'
+            label=f'$t_be$'
         )
         
-        ax.axvline(
-            x=median_tpostbounce, 
-            color='blue', 
-            linestyle='--', 
-            linewidth=1.5, 
-            label=f't = $t_pbe$ ({median_tpostbounce:.3f})'
-        )
-
         ax.set_ylabel('hD (cm)')
         ax.set_title(f'Class: {label}')
         

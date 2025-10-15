@@ -195,7 +195,17 @@ if time_interpolated is not None:
             
             tbe=find_tbe(time_interpolated,signals_df.iloc[idx].values.astype(float))##encontrar tbe
             # Línea vertical para el centro del bounce (t-tb=0)
-            ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
+            #ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
+            ax.text(
+            x=0,  # Posición X (en la línea)
+            y=0.95, # Posición Y (cerca de la parte superior, 95% del eje Y)
+            s='$t_{\\text{bounce}}$', # El texto a mostrar
+            color='black',
+            ha='center', # Alineación horizontal: centrado en x=0
+            va='center', # Alineación vertical: centrado en y
+            rotation='vertical', # Opcional: rotar el texto si es largo
+            transform=ax.get_yaxis_transform() # Usa coordenadas normalizadas para Y
+            )
 
             # 2. Línea vertical en t = 0 + tb (Rebote del núcleo)
             # Asumiendo que 'time' representa el tiempo después del inicio del colapso
@@ -207,6 +217,7 @@ if time_interpolated is not None:
                 linewidth=1.5, 
                 label=f't = $t_b$ ({tbe:.3f})'
             )
+            
 
             """ax.axvline(
                 x=tbe, 
