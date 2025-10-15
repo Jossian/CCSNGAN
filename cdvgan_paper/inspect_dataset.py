@@ -11,6 +11,40 @@ from pathlib import Path
 import requests
 from io import BytesIO
 
+def find_tbe(time_array, signal_median, n_crossings=3):
+    """
+    Encuentra el tiempo del tercer cruce por cero (tbe) de la señal
+    después del core bounce (t=0).
+
+    Args:
+        time_array (np.array): Array de tiempo centrado en el bounce (t-tb).
+        signal_median (np.array): La señal (mediana de las clases).
+        n_crossings (int): El número de cruce por cero a encontrar (tbe es el tercero).
+
+    Returns:
+        float: El valor de tiempo (en segundos) de tbe.
+    """
+    # 1. Nos enfocamos solo en el tiempo post-bounce (t >= 0)
+    post_bounce_mask = time_array >= 0
+    t_post = time_array[post_bounce_mask]
+    s_post = signal_median[post_bounce_mask]
+    
+    # 2. Encontrar los cruces por cero (cuando el signo cambia)
+    # np.sign(s_post) da 1, 0, o -1. El producto es negativo en un cruce.
+    zero_crossings_indices = np.where(np.diff(np.sign(s_post)))[0]
+    
+    if len(zero_crossings_indices) < n_crossings:
+        # Si no se encuentra el tercer cruce, devolvemos el último punto de la señal
+        # o un valor alto para que quede fuera del gráfico si es necesario.
+        return time_array[-1]
+    
+    # 3. El índice del tercer cruce por cero (índices son base 0, por eso n_crossings - 1)
+    tbe_index = zero_crossings_indices[n_crossings - 1]
+    
+    # 4. Devolver el tiempo (en segundos) en ese índice
+    return t_post[tbe_index]
+
+
 url = "https://zenodo.org/record/201145/files/GWdatabase.h5?download=1"
 
 # Descargar el archivo en memoria
@@ -168,6 +202,7 @@ if time_interpolated is not None:
             ax.set_ylabel("Amplitud normalizada")
             ax.grid(True, alpha=0.3)
             
+            tbe=find_tbe(time_interpolated,signals_df.iloc[idx].values.astype(float))##encontrar tbe
             # Línea vertical para el centro del bounce (t-tb=0)
             ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0')
 
@@ -175,13 +210,20 @@ if time_interpolated is not None:
             # Asumiendo que 'time' representa el tiempo después del inicio del colapso
             # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
             ax.axvline(
-                x=label['tbounce_s'], 
+                x=tbe, 
                 color='red', 
                 linestyle='-', 
                 linewidth=1.5, 
-                label=f't = $t_b$ ({label["tbounce_s"]:.3f})'
+                label=f't = $t_b$ ({tbe:.3f})'
             )
 
+            """ax.axvline(
+                x=tbe, 
+                color='blue', 
+                linestyle='-', 
+                linewidth=1.5, 
+                label=f't = $t_pb$ ({label["tbounce_s"]:.3f})'
+            )"""
             # Añadir leyenda
             ax.legend(loc='upper right', fontsize=7)
 
