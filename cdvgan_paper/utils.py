@@ -206,95 +206,97 @@ import seaborn as sns
 import numpy as np
 
 
-def plot_signal_distribution_by_class(signals, labels, time=None):
+def plot_signal_distribution_by_class(signals, labels, save_path, time=None):
     """
-    Genera subplots por clase mostrando la mediana, central 50% y central 95% de las señales,
-    con ejes Y uniformes. Agrega líneas verticales para t=0 y t=tbounce.
+    Genera plots individuales por clase, guardando cada uno en la ruta especificada.
+    
+    Args:
+        signals (np.ndarray): Array de señales.
+        labels (np.ndarray): Etiquetas de clase.
+        save_path (str): Directorio donde guardar los plots.
+        time (np.ndarray, optional): Array de tiempo.
     """
 
     unique_labels = np.unique(labels)
-    n_classes = len(unique_labels)
-
+    # n_classes ya no es necesario para crear subplots
+    
+    # --- Configuración del Eje de Tiempo (X) ---
     if time is None:
         time = [j / 4096 for j in range(0, 256)]
         time = [value - (53 / 4096) for value in time]
-        time = np.array(time) 
     
-    # 🌟 CORRECCIÓN DE LÍMITES Y UNIFORMES 🌟
-    # Si bien usaste ax.set_ylim(-1, 1), es mejor calcularlo para robustez.
-    # Pero mantendremos el -1, 1 para ser consistentes con tu código original.
-    Y_LIMIT = 1.05 * np.max(np.abs(signals)) 
-    # Usaremos el límite fijo de 1 si los datos lo permiten, o el calculado si se excede.
-    if Y_LIMIT < 1.0: Y_LIMIT = 1.0
+    time = np.array(time) # Asegura que sea un array de NumPy
     
-    # Crea el layout simple de N filas x 1 columna (compartiendo el eje X)
-    fig, axes = plt.subplots(n_classes, 1, figsize=(10, 3.5 * n_classes), sharex=True)
-    if n_classes == 1:
-        axes = [axes]  # Asegura que axes sea iterable
+    # --- Configuración de Límites Y ---
+    # Usaremos el límite Y fijo para todas las gráficas para consistencia visual.
+    # En tu código pusiste ax.set_ylim(-1, 0.5), pero es mejor calcular Y_LIMIT
+    # Y_LIMIT = 1.05 * np.max(np.abs(signals)) 
+    
+    # Crear el directorio si no existe
+    os.makedirs(save_path, exist_ok=True) 
 
+    # --- Bucle para Generar Plots Individuales ---
     for idx, label in enumerate(unique_labels):
-        ax = axes[idx]
-        
+        # 🌟 CREAR FIGURA Y EJE DENTRO DEL BUCLE 🌟
+        fig, ax = plt.subplots(figsize=(8, 4)) 
+
         # Filtra las señales y los tiempos de rebote para la clase actual
         class_signals = signals[labels == label]
-        #class_tbounce = tbounce[labels == label]
-        #class_tbpostounce = tpbe[labels == label]
-
+        
         # Evita errores si no hay datos
         if class_signals.size == 0:
-             ax.set_title(f'Class: {label} (No data)')
-             continue
+            plt.close(fig) # Cierra la figura vacía
+            continue
 
-        # Cálculo de percentiles (median, 50%, 95%)
+        # Cálculo de percentiles
         median = np.median(class_signals, axis=0)
         p25 = np.percentile(class_signals, 25, axis=0)
         p75 = np.percentile(class_signals, 75, axis=0)
         p2_5 = np.percentile(class_signals, 2.5, axis=0)
         p97_5 = np.percentile(class_signals, 97.5, axis=0)
         
-        # Calcula el tiempo de rebote promedio para esta clase
-
-        median_tbounce = find_tbe(time,median)
+        # Calcula t_be (median_tbounce)
+        median_tbe = find_tbe(time, median)
 
         # Plotting
         ax.fill_between(time, p2_5, p97_5, color='blue', alpha=0.2, label='Central 95%')
         ax.fill_between(time, p25, p75, color='blue', alpha=0.4, label='Central 50%')
         ax.plot(time, median, color='black', linewidth=1, label='Median of signals')
         
-        # 🌟 AGREGAR LÍNEAS VERTICALES (core bounce) 🌟
+        # --- AGREGAR LÍNEAS VERTICALES ---
         
-        # 1. Línea vertical en t=0 (Inicio de la simulación o colapso)
-        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label=f'$t_b$')
+        # 1. Línea vertical en t=0 (Core Bounce)
+        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0 (Core Bounce)')
 
-        # 2. Línea vertical en t = 0 + tb (Rebote del núcleo)
-        # Asumiendo que 'time' representa el tiempo después del inicio del colapso
-        # y que tbounce (tb) ya está en unidades de tiempo consistentes con 'time'.
-        ax.axvline(
-            x=median_tbounce, 
-            color='red', 
-            linestyle='--', 
-            linewidth=1.5, 
-            label=f'$t_be$'
-        )
+        # 2. Línea vertical en t = t_be (Fin del Bounce, segundo cruce por cero)
+        if not np.isnan(median_tbe):
+             ax.axvline(
+                x=median_tbe, 
+                color='red', 
+                linestyle='--', 
+                linewidth=1.5, 
+                label=f'$t_{{be}}$ ({median_tbe:.3f} s)'
+             )
         
+        # --- ETIQUETAS y LÍMITES ---
         ax.set_ylabel('hD (cm)')
-        ax.set_title(f'Class: {label}')
+        ax.set_xlabel('Time ($t - t_b$) (s)')
+        ax.set_title(f'Signal Distribution - Class: {int(label)}')
         
-        # Aplica límites Y uniformes
-        ax.set_ylim(-Y_LIMIT, Y_LIMIT)
+        # Usamos los límites Y fijos de tu código original, pero se recomienda calcularlos
+        ax.set_ylim(-1, 0.5) 
         ax.grid(True)
         
-        # Leyenda (incluyendo las líneas axvline)
-        if idx == 0:
-            # Combina todas las leyendas: median, 50%, 95%, t=0, t=tb
-            handles, labels_list = ax.get_legend_handles_labels()
-            # Ordena la leyenda para poner los rangos primero
-            order = [0, 1, 2, 3, 4] # Orden típico: 95%, 50%, Median, t=0, t=tb
-            ax.legend([handles[i] for i in order], [labels_list[i] for i in order], loc='upper right', fontsize='small')
+        # Leyenda
+        ax.legend(loc='upper right', fontsize='small')
 
-    axes[-1].set_xlabel('Time (s)')
-    plt.tight_layout()
-    plt.show()
+        # 🌟 GUARDAR EL PLOT INDIVIDUAL 🌟
+        file_name = f'class_{int(label)}_distribution.png'
+        full_path = os.path.join(save_path, file_name)
+        
+        fig.tight_layout() # Ajusta el layout de la figura actual
+        fig.savefig(full_path, dpi=300)
+        plt.close(fig) # Cierra la figura para liberar memoria (MUY IMPORTANTE)
 
 def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, UMAP"):
     """

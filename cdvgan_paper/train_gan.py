@@ -140,7 +140,7 @@ print(new_labels)
 
 
 #tbounce=tbounce['tbounce_s']
-plot_signal_distribution_by_class(data_orig,class_array_orig)
+plot_signal_distribution_by_class(data_orig,class_array_orig,f'{ruta_proyecto}/GAN_outputs/')
 metrics=compare_signal_datasets(data_orig,data,class_array_orig)
 plot_examples_5(data_orig, class_array_orig, monitor_dir)
 
