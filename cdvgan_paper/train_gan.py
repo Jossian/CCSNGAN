@@ -70,7 +70,20 @@ class_array_orig = class_array_orig - 1
 unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 #print("Classes, counts  originales del dataset: ")
 #print(np.asarray((unique, counts)).T)
-parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5,6))
+#parameters=np.loadtxt(f'{ruta_proyecto}/data/labels.csv', delimiter=',',skiprows=1,usecols=(4,5,6))
+
+converters_dict = {
+    # Index 2 corresponds to the 3rd column requested (usecols=(4, 5, 6))
+    2: lambda s: np.nan if s == b'' else float(s) 
+}
+
+parameters = np.loadtxt(
+    f'{ruta_proyecto}/data/labels.csv', 
+    delimiter=',',
+    skiprows=1,
+    usecols=(4, 5, 6),
+    converters=converters_dict 
+)
 signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
 time_interp=np.loadtxt(f'{ruta_proyecto}/data/time_interpolated.csv', delimiter=',',skiprows=1)
 
