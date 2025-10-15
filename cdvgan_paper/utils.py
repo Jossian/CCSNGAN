@@ -238,7 +238,7 @@ def plot_signal_distribution_by_class(signals, labels, save_path, time=None):
     # --- Bucle para Generar Plots Individuales ---
     for idx, label in enumerate(unique_labels):
         # 🌟 CREAR FIGURA Y EJE DENTRO DEL BUCLE 🌟
-        fig, ax = plt.subplots(figsize=(8, 4)) 
+        fig, ax = plt.subplots(figsize=(5, 4)) 
 
         # Filtra las señales y los tiempos de rebote para la clase actual
         class_signals = signals[labels == label]
