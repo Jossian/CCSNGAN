@@ -10,38 +10,28 @@ import sys
 from pathlib import Path
 import requests
 from io import BytesIO
-
-def find_tbe(time_array, signal_median, n_crossings=3):
+def find_tbe(time_array, signal_median, n_crossings=2): # <--- CAMBIO CLAVE A n_crossings=2
     """
-    Encuentra el tiempo del tercer cruce por cero (tbe) de la señal
-    después del core bounce (t=0).
-
-    Args:
-        time_array (np.array): Array de tiempo centrado en el bounce (t-tb).
-        signal_median (np.array): La señal (mediana de las clases).
-        n_crossings (int): El número de cruce por cero a encontrar (tbe es el tercero).
-
-    Returns:
-        float: El valor de tiempo (en segundos) de tbe.
+    Encuentra el tiempo del segundo cruce por cero (tbe) de la señal
+    después del core bounce (t=0), siguiendo el ejemplo de la Figura 4.
     """
+    
     # 1. Nos enfocamos solo en el tiempo post-bounce (t >= 0)
     post_bounce_mask = time_array >= 0
     t_post = time_array[post_bounce_mask]
     s_post = signal_median[post_bounce_mask]
     
     # 2. Encontrar los cruces por cero (cuando el signo cambia)
-    # np.sign(s_post) da 1, 0, o -1. El producto es negativo en un cruce.
     zero_crossings_indices = np.where(np.diff(np.sign(s_post)))[0]
     
     if len(zero_crossings_indices) < n_crossings:
-        # Si no se encuentra el tercer cruce, devolvemos el último punto de la señal
-        # o un valor alto para que quede fuera del gráfico si es necesario.
-        return time_array[-1]
+        # Si no se encuentra el N-ésimo cruce, devolvemos NaN.
+        return np.nan 
     
-    # 3. El índice del tercer cruce por cero (índices son base 0, por eso n_crossings - 1)
+    # 3. El índice del N-ésimo cruce por cero (ahora el segundo)
     tbe_index = zero_crossings_indices[n_crossings - 1]
     
-    # 4. Devolver el tiempo (en segundos) en ese índice
+    # 4. Devolver el tiempo (en segundos)
     return t_post[tbe_index]
 
 
