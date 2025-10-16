@@ -266,7 +266,7 @@ def plot_signal_distribution_by_class(signals, labels, save_path, time=None):
         # --- AGREGAR LÍNEAS VERTICALES ---
         
         # 1. Línea vertical en t=0 (Core Bounce)
-        ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, label='t = 0 (Core Bounce)')
+        ax.axvline(x=0, color='gray', linestyle='--', linewidth=0.7, label='t = 0 (Core Bounce)')
 
         # 2. Línea vertical en t = t_be (Fin del Bounce, segundo cruce por cero)
         if not np.isnan(median_tbe):
@@ -274,14 +274,14 @@ def plot_signal_distribution_by_class(signals, labels, save_path, time=None):
                 x=median_tbe, 
                 color='red', 
                 linestyle='--', 
-                linewidth=1.5, 
+                linewidth=0.7, 
                 label=f'$t_{{be}}$ ({median_tbe:.3f} s)'
              )
         
         # --- ETIQUETAS y LÍMITES ---
-        ax.set_ylabel('hD (cm)')
+        ax.set_ylabel('Normalized amplitude')
         ax.set_xlabel('Time ($t - t_b$) (s)')
-        ax.set_title(f'Signal Distribution - Class: {int(label)}')
+        ax.set_title(f'Signal Distribution - Class {int(label)}')
         
         # Usamos los límites Y fijos de tu código original, pero se recomienda calcularlos
         ax.set_ylim(-1, 0.5) 
