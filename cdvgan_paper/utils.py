@@ -154,7 +154,7 @@ def plot_examples_5(data, classes, path):
             selected_labels.append(c)
 
     # Graficar verticalmente
-    """
+    
     plt.figure(figsize=(10, 10))
     for i, (signal, label) in enumerate(zip(selected_signals, selected_labels)):
         ax = plt.subplot(len(selected_signals), 1, i + 1)
@@ -170,8 +170,8 @@ def plot_examples_5(data, classes, path):
     plt.tight_layout()
     plt.savefig(path+"/examples_org.png")
     plt.show()
-    plt.close()"""
-    plt.figure(figsize=(10, 6))
+    plt.close()
+    """plt.figure(figsize=(10, 6))
 
     # Definir un mapa de colores para las clases
     colors = plt.cm.tab10.colors  # hasta 10 colores distintos
@@ -195,7 +195,7 @@ def plot_examples_5(data, classes, path):
     plt.tight_layout()
     plt.savefig(path + "/examples_org.png")
     plt.show()
-    plt.close()
+    plt.close()"""
         
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
