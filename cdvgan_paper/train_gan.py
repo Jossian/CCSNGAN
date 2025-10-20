@@ -270,24 +270,24 @@ print(f"Tiempo de generación para 15 señales: {end - start:.6f} segundos")
 
 generations_vertex = generations_vertex.numpy()
 
-generations_simplex = gan.generator([latent_vectors_vertex, simplex_classes])
-generations_simplex = generations_simplex.numpy()
+#generations_simplex = gan.generator([latent_vectors_vertex, simplex_classes])
+#generations_simplex = generations_simplex.numpy()
 
 generations_uniform = gan.generator([latent_vectors_vertex, uniform_classes])
 generations_uniform = generations_uniform.numpy()
 
 vertex_classes = vertex_classes.numpy()
-simplex_classes = simplex_classes.numpy()
-uniform_classes = uniform_classes.numpy()
+#simplex_classes = simplex_classes.numpy()
+#uniform_classes = uniform_classes.numpy()
 
 #print("vertex classes: ", vertex_classes)
 # Plot some examples of generated data using different sampling methods.
 #plot_examples_5(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
 
 
-plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
-plot_examples(generations_simplex, simplex_classes, output_path+'/Simplex_examples')
-plot_examples(generations_uniform, uniform_classes, output_path+'/Uniform_examples')
+#plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
+#plot_examples(generations_simplex, simplex_classes, output_path+'/Simplex_examples')
+#plot_examples(generations_uniform, uniform_classes, output_path+'/Uniform_examples')
 
 
 print('Training Completed!')
@@ -327,7 +327,7 @@ vertex_classes_datasets = tf.one_hot(labels, depth,
           on_value=1.0, off_value=0.0,
           axis=-1)
 zero_rows = tf.reduce_all(tf.equal(vertex_classes_datasets, 0), axis=1)
-print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
+#print("Número de filas con [0, 0, 0]:", tf.reduce_sum(tf.cast(zero_rows, tf.int32)).numpy())
 
 latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
 
@@ -336,7 +336,7 @@ generations_vertex = gan.generator([latent_vectors_vertex, vertex_classes_datase
 generations_vertex = generations_vertex.numpy()
 
 
-print("lenght generations: ", generations_vertex.shape)
+#print("lenght generations: ", generations_vertex.shape)
 consistency_test(data_orig, class_array_orig, generations_vertex, labels)
 
 plot_pca_3d(generations_vertex, labels)
