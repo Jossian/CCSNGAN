@@ -282,7 +282,7 @@ vertex_classes = vertex_classes.numpy()
 
 #print("vertex classes: ", vertex_classes)
 # Plot some examples of generated data using different sampling methods.
-#plot_examples_5(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
+plot_examples_5(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
 
 
 #plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
