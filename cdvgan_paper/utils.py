@@ -133,6 +133,45 @@ def find_tbe(time_array, signal_median, n_crossings=2): # <--- CAMBIO CLAVE A n_
     return t_post[tbe_index]
 
 
+def plot_examples_complete(data, classes, path):
+    """Plot and save individual plots per class with all signals in different colors."""
+    # Convertir a etiquetas si es one-hot
+    if isinstance(classes, (list, np.ndarray)) and np.ndim(classes) > 1:
+        cls_numeric = np.argmax(classes, axis=1)
+    else:
+        cls_numeric = np.array(classes)
+
+    # Obtener clases únicas
+    unique_classes = np.unique(cls_numeric)
+    
+    # Crear directorio si no existe
+    import os
+    os.makedirs(path, exist_ok=True)
+    
+    # Generar eje x una vez
+    x = [j / 4096 for j in range(0, 256)]
+    x = [value - (53 / 4096) for value in x]
+    
+    # Generar un plot por clase
+    for c in unique_classes:
+        # Obtener todas las señales de esta clase
+        idx = np.where(cls_numeric == c)[0]
+        
+        plt.figure(figsize=(10, 6))
+        
+        # Graficar todas las señales de la clase
+        for i in idx:
+            plt.plot(x, data[i], alpha=0.7)
+        
+        plt.ylim(-1, 1)
+        plt.title(f"Class {int(c)}")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude [A.U.]")
+        plt.tight_layout()
+        
+        # Guardar el plot
+        plt.savefig(f"{path}/class_{int(c)}_all_signals.png", dpi=100)
+        plt.close()
 
 def plot_examples_5(data, classes, path):
     """Plot and save one example per class (up to 5 classes) vertically."""

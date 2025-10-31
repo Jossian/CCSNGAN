@@ -15,7 +15,7 @@ import time
 import pandas as pd
 
 from .gan_models import choose_gan
-from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, plot_examples_5, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d, plot_signal_distribution_by_class
+from .utils import discriminator_loss, generator_loss, calculate_derivative, plot_GAN_history, plot_examples, plot_examples_5,plot_examples_complete, GANMonitor, fit_GAN, compare_signal_datasets, plot_pca_3d, plot_signal_distribution_by_class
 from .consistency_test import consistency_test
 import pickle
 import json
@@ -282,8 +282,8 @@ vertex_classes = vertex_classes.numpy()
 
 #print("vertex classes: ", vertex_classes)
 # Plot some examples of generated data using different sampling methods.
-plot_examples_5(generations_vertex, vertex_classes, output_path)
-
+#plot_examples_5(generations_vertex, vertex_classes, output_path)
+plot_examples_complete(generations_vertex, vertex_classes, output_path)
 
 #plot_examples(generations_vertex, vertex_classes, output_path+'/Vertex_examples')
 #plot_examples(generations_simplex, simplex_classes, output_path+'/Simplex_examples')
