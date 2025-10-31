@@ -238,7 +238,7 @@ if gan_choice in ['DVGAN', 'DVGAN2', 'MCDVGANN']:
 
 
 # Generate signals. We will sample the class space in three different ways; vertex, simplex and uniform sampling
-num_signals = 15
+num_signals = 50
 '''indices = tf.experimental.numpy.random.randint(
         0,
         high=num_classes,
