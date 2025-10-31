@@ -157,16 +157,16 @@ def plot_examples_complete(data, classes, path):
         # Obtener todas las señales de esta clase
         idx = np.where(cls_numeric == c)[0]
         
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(5, 4))
         
         # Graficar todas las señales de la clase
         for i in idx:
             plt.plot(x, data[i], alpha=0.7)
         
-        plt.ylim(-1, 1)
-        plt.title(f"Class {int(c)}")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Amplitude [A.U.]")
+        plt.ylim(-1, 0.5)
+        plt.title(f"Generated waveforms - Class {int(c)}")
+        plt.xlabel("Time ($t - t_b$) (s)")
+        plt.ylabel("Normalized Amplitude")
         plt.tight_layout()
         
         # Guardar el plot
