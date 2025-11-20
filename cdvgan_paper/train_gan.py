@@ -186,7 +186,7 @@ gan = choose_gan(gan_choice, signal_length, deriv_signal_length, deriv2_signal_l
 
 # Set batch size and number of epochs for training.
 BATCH_SIZE = 16
-epochs = 500
+epochs = 5
 
 # Change to False if you don't want the GAN monitor to plot generated signals after each epoch.
 callback = True
@@ -201,7 +201,10 @@ else:
     data = [data, class_array_one_hot]
     
 # Start training the model, saving the histroy information.
+start = time.time()
 history = fit_GAN(gan, data, batch_size=BATCH_SIZE, epochs=epochs, gan_variant = gan_choice, callback = callback, noise_dim = noise_dim, callback_path=callback_path)
+end = time.time()
+print(f"Training time: {end - start:.6f} seconds")
 
 # Output path where loss plots, generated examples and trained generators are stored.
 output_path = output_dir+gan_choice

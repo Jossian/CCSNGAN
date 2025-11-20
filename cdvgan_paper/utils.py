@@ -375,8 +375,10 @@ def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, 
     else:
         labels_named = labels
 
+    
     # Colores
     unique_labels = np.unique(labels_named)
+    unique_labels=int(unique_labels)
     colors = sns.color_palette("husl", len(unique_labels))
 
     for i, (proj, subtitle, axis_labels) in enumerate(projections):
