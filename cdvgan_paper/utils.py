@@ -378,7 +378,7 @@ def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, 
     
     # Colores
     unique_labels = np.unique(labels_named)
-    unique_labels=int(unique_labels)
+    #unique_labels=int(unique_labels)
     colors = sns.color_palette("husl", len(unique_labels))
 
     for i, (proj, subtitle, axis_labels) in enumerate(projections):
@@ -389,7 +389,7 @@ def plot_pca_3d(X, labels, label_names=None, title="3D Projections: PCA, t-SNE, 
         for j, label in enumerate(unique_labels):
             subset = df[df['label'] == label]
             ax.scatter(subset['X'], subset['Y'], subset['Z'],
-                       label=label, s=15, alpha=0.7, color=colors[j])
+                       label=int(label), s=15, alpha=0.7, color=colors[j])
 
         ax.set_title(subtitle)
         ax.set_xlabel(axis_labels[0])
