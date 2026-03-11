@@ -414,7 +414,7 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     # --------- ⬆️ FIN DEL BLOQUE AGREGADO ⬆️ ----------
 
 
-    import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
