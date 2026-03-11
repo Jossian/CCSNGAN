@@ -59,7 +59,7 @@ import matplotlib.lines as mlines
 def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert=False):
     plt.rcParams.update({
         'font.family': 'serif',
-        'text.usetex': False,  # Cambia a True si tienes LaTeX instalado
+        'text.usetex': False,
         'font.size': 11,
         'axes.labelsize': 13,
         'legend.fontsize': 11,
@@ -105,7 +105,6 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         x_line = np.linspace(min(x), max(x), 100)
         ax_main.plot(x_line, slope * x_line + intercept, color=color, linewidth=1.5)
 
-        # Handle compacto: línea + punto, sin duplicados en leyenda
         handle = mlines.Line2D(
             [], [], color=color, linewidth=1.8,
             marker=marker, markersize=4,
@@ -123,21 +122,20 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         ax_histy.axhline(y_mean - 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
         ax_histy.axhline(y_mean + 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
 
-    ax_main.set_xlabel(xlabel)
-    ax_main.set_ylabel(ylabel)
-    fig.suptitle(f"Similarity: {metric_name.capitalize()}", y=0.98, fontsize=13)
+    # Ejes con notación LaTeX del paper
+    ax_main.set_xlabel(r"$m(\mathcal{D}_{gen}^{(k)}, \mathcal{D}_{gen}^{(k)})$")
+    ax_main.set_ylabel(r"$m(\mathcal{D}_{gen}^{(k)}, \mathcal{D}^{(k)})$")
 
     if invert:
         ax_main.invert_yaxis()
         ax_main.invert_xaxis()
 
-    # Leyenda: 2 columnas → 3 arriba / 2 abajo
+    # Leyenda: 1 columna, sin fondo
     ax_main.legend(
         handles=legend_handles,
-        ncol=2,
+        ncol=1,
         loc='upper left',
-        framealpha=0.85,
-        edgecolor='#cccccc',
+        frameon=False,          # ← sin fondo ni borde
         handlelength=1.8,
         handletextpad=0.5,
         labelspacing=0.3,
@@ -151,9 +149,8 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     plt.setp(ax_histy.get_yticklabels(), visible=False)
 
     plt.tight_layout()
-    plt.savefig(f"similarity_{metric_name}.pdf", dpi=300, bbox_inches='tight')
+    plt.savefig(f"similarity_{metric_name}.eps", format='eps', bbox_inches='tight')
     plt.show()
-
 # Ejecutar las gráficas optimizadas
 #plot_similarity_metric('wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
 #plot_similarity_metric('match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
