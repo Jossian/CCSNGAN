@@ -9,7 +9,7 @@ from numpy.fft import fft
 from scipy.spatial.distance import cdist
 from fastdtw import fastdtw
 from sklearn.metrics.pairwise import rbf_kernel
-
+import matplotlib.ticker as ticker
 # Simulación de poblaciones (real vs artificial) para cada clase
 def simulate_blips(n, dim=50):
     return np.random.normal(0, 1, size=(n, dim))
@@ -381,8 +381,9 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
             K_ij = multi_scale_rbf_kernel(D_ij)
             mmd_cross = np.mean(K_ij)
             mmd_results['cross_class'][(i, j)] = mmd_cross
-
-    # 📊 Plots
+    plot_class_conditional_mmd(mmd_results, classes)
+    plot_cross_class_mmd(mmd_results, classes)
+    """# 📊 Plots
     # Class-conditional MMD
     keys = list(mmd_results['class_conditional'].keys())
     values = [mmd_results['class_conditional'][k] for k in keys]
@@ -409,5 +410,212 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     plt.yticks(classes)
     plt.xlabel("Class")
     plt.ylabel("Class")
-    plt.show()
+    plt.show()"""
     # --------- ⬆️ FIN DEL BLOQUE AGREGADO ⬆️ ----------
+
+
+    import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+def plot_class_conditional_mmd(mmd_results, classes):
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'legend.fontsize': 10,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    colors = {
+        0: 'royalblue',
+        1: 'darkorange',
+        2: 'forestgreen',
+        3: 'crimson',
+        4: 'mediumvioletred'
+    }
+
+    keys   = list(mmd_results['class_conditional'].keys())
+    values = [mmd_results['class_conditional'][k] for k in keys]
+    mean_val = np.mean(values)
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    bar_colors = [colors.get(int(k), 'gray') for k in keys]
+    bars = ax.bar(keys, values, color=bar_colors, alpha=0.85, width=0.6, zorder=3)
+
+    # Anotación del valor encima de cada barra
+    for bar, val in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + max(values) * 0.01,
+            f'{val:.3f}',
+            ha='center', va='bottom', fontsize=9
+        )
+
+    # Línea de media
+    ax.axhline(mean_val, linestyle='--', color='black', linewidth=1,
+               alpha=0.6, label=fr'Mean $= {mean_val:.3f}$', zorder=4)
+
+    ax.set_xlabel('Class')
+    ax.set_ylabel(r'MMD$^2$')
+    ax.set_xticks([int(k) for k in keys])
+    ax.legend(frameon=False, fontsize=10)
+    ax.grid(True, axis='y', linewidth=0.4, alpha=0.5, zorder=0)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_ylim(0, max(values) * 1.15)
+
+    plt.tight_layout()
+    plt.savefig("mmd_class_conditional.pdf", format='pdf', bbox_inches='tight')
+    plt.show()
+
+
+def plot_cross_class_mmd(mmd_results, classes):
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    n = len(classes)
+    matrix = np.zeros((n, n))
+    for (i, j), val in mmd_results['cross_class'].items():
+        i_idx = int(i)
+        j_idx = int(j)
+        matrix[i_idx, j_idx] = val
+        matrix[j_idx, i_idx] = val
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    im = ax.imshow(matrix, interpolation='nearest', cmap='RdYlGn')
+
+    # Colorbar
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label('Cross-class similarity (avg. kernel)', fontsize=10)
+    cbar.ax.tick_params(labelsize=9)
+
+    # Anotación de cada celda
+    vmin, vmax = matrix.min(), matrix.max()
+    for i in range(n):
+        for j in range(n):
+            val = matrix[i, j]
+            # Color de texto según fondo para legibilidad
+            text_color = 'white' if val < (vmin + vmax) / 2 else 'black'
+            ax.text(j, i, f'{val:.2f}', ha='center', va='center',
+                    fontsize=9, color=text_color)
+
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels([int(c) for c in classes])
+    ax.set_yticklabels([int(c) for c in classes])
+    ax.set_xlabel('Class')
+    ax.set_ylabel('Class')
+
+    plt.tight_layout()
+    plt.savefig("mmd_cross_class.pdf", format='pdf', bbox_inches='tight')
+    plt.show()
+
+def plot_class_conditional_mmd(mmd_results, classes):
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'legend.fontsize': 10,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    colors = {
+        0: 'royalblue',
+        1: 'darkorange',
+        2: 'forestgreen',
+        3: 'crimson',
+        4: 'mediumvioletred'
+    }
+
+    keys   = list(mmd_results['class_conditional'].keys())
+    values = [mmd_results['class_conditional'][k] for k in keys]
+    mean_val = np.mean(values)
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    bar_colors = [colors.get(int(k), 'gray') for k in keys]
+    bars = ax.bar(keys, values, color=bar_colors, alpha=0.85, width=0.6, zorder=3)
+
+    # Anotación del valor encima de cada barra
+    for bar, val in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + max(values) * 0.01,
+            f'{val:.3f}',
+            ha='center', va='bottom', fontsize=9
+        )
+
+    # Línea de media
+    ax.axhline(mean_val, linestyle='--', color='black', linewidth=1,
+               alpha=0.6, label=fr'Mean $= {mean_val:.3f}$', zorder=4)
+
+    ax.set_xlabel('Class')
+    ax.set_ylabel(r'MMD$^2$')
+    ax.set_xticks([int(k) for k in keys])
+    ax.legend(frameon=False, fontsize=10)
+    ax.grid(True, axis='y', linewidth=0.4, alpha=0.5, zorder=0)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_ylim(0, max(values) * 1.15)
+
+    plt.tight_layout()
+    plt.savefig("mmd_class_conditional.pdf", format='pdf', bbox_inches='tight')
+    plt.show()
+
+
+def plot_cross_class_mmd(mmd_results, classes):
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    n = len(classes)
+    matrix = np.zeros((n, n))
+    for (i, j), val in mmd_results['cross_class'].items():
+        i_idx = int(i)
+        j_idx = int(j)
+        matrix[i_idx, j_idx] = val
+        matrix[j_idx, i_idx] = val
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    im = ax.imshow(matrix, interpolation='nearest', cmap='RdYlGn')
+
+    # Colorbar
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label('Cross-class similarity (avg. kernel)', fontsize=10)
+    cbar.ax.tick_params(labelsize=9)
+
+    # Anotación de cada celda
+    vmin, vmax = matrix.min(), matrix.max()
+    for i in range(n):
+        for j in range(n):
+            val = matrix[i, j]
+            # Color de texto según fondo para legibilidad
+            text_color = 'white' if val < (vmin + vmax) / 2 else 'black'
+            ax.text(j, i, f'{val:.2f}', ha='center', va='center',
+                    fontsize=9, color=text_color)
+
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels([int(c) for c in classes])
+    ax.set_yticklabels([int(c) for c in classes])
+    ax.set_xlabel('Class')
+    ax.set_ylabel('Class')
+
+    plt.tight_layout()
+    plt.savefig("mmd_cross_class.pdf", format='pdf', bbox_inches='tight')
+    plt.show()
