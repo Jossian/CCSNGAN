@@ -50,11 +50,27 @@ def compute_similarity_fast(blip, population, metric='wasserstein'):
 
 # Redefinir función de ploteo
 
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from scipy.stats import linregress
+import matplotlib.lines as mlines
+
 def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert=False):
-    fig = plt.figure(figsize=(8, 8))
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'text.usetex': False,  # Cambia a True si tienes LaTeX instalado
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'legend.fontsize': 11,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    fig = plt.figure(figsize=(7, 7))
     gs = GridSpec(2, 2, width_ratios=[4, 1], height_ratios=[1, 4], hspace=0.05, wspace=0.05)
 
-    ax_main = fig.add_subplot(gs[1, 0])
+    ax_main  = fig.add_subplot(gs[1, 0])
     ax_histx = fig.add_subplot(gs[0, 0], sharex=ax_main)
     ax_histy = fig.add_subplot(gs[1, 1], sharey=ax_main)
 
@@ -66,8 +82,10 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         4: 'mediumvioletred'
     }
 
+    markers = {0: 'o', 1: 's', 2: '^', 3: 'D', 4: 'v'}
+    legend_handles = []
+
     for cls in classes:
-        # Si cls es one-hot encoding, conviértelo a número:
         if isinstance(cls, (list, np.ndarray)):
             cls_numeric = int(np.argmax(cls))
         else:
@@ -77,48 +95,63 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         x = np.array(results[metric_name]['x'])[cls_mask]
         y = np.array(results[metric_name]['y'])[cls_mask]
 
-        color = colors.get(cls_numeric, 'gray')
-        ax_main.scatter(x, y, label=cls_numeric, alpha=0.5, s=10, color=color)
+        color  = colors.get(cls_numeric, 'gray')
+        marker = markers.get(cls_numeric, 'o')
+
+        ax_main.scatter(x, y, alpha=0.4, s=8, color=color, marker=marker)
         print("DEBUG SHAPES", metric_name, "x:", np.array(x).shape, "y:", np.array(y).shape)
 
-        # Ajuste lineal
         slope, intercept, *_ = linregress(x, y)
         x_line = np.linspace(min(x), max(x), 100)
-        ax_main.plot(x_line, slope * x_line + intercept, color=color,
-                     label=fr"{cls_numeric}: $y = {slope:.2f}x + {intercept:.2f}$")
+        ax_main.plot(x_line, slope * x_line + intercept, color=color, linewidth=1.5)
 
-        # Histograma superior
+        # Handle compacto: línea + punto, sin duplicados en leyenda
+        handle = mlines.Line2D(
+            [], [], color=color, linewidth=1.8,
+            marker=marker, markersize=4,
+            label=fr"{cls_numeric}: $y = {slope:.2f}x + {intercept:.2f}$"
+        )
+        legend_handles.append(handle)
+
         ax_histx.hist(x, bins=50, color=color, alpha=0.6)
         x_mean, x_std = np.mean(x), np.std(x)
-        ax_histx.axvline(x_mean - 6 * x_std, linestyle='--', color=color, alpha=0.6)
-        ax_histx.axvline(x_mean + 6 * x_std, linestyle='--', color=color, alpha=0.6)
+        ax_histx.axvline(x_mean - 6 * x_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
+        ax_histx.axvline(x_mean + 6 * x_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
 
-        # Histograma lateral
         ax_histy.hist(y, bins=50, color=color, orientation='horizontal', alpha=0.6)
         y_mean, y_std = np.mean(y), np.std(y)
-        ax_histy.axhline(y_mean - 6 * y_std, linestyle='--', color=color, alpha=0.6)
-        ax_histy.axhline(y_mean + 6 * y_std, linestyle='--', color=color, alpha=0.6)
+        ax_histy.axhline(y_mean - 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
+        ax_histy.axhline(y_mean + 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
 
-    # Ejes y estilo
     ax_main.set_xlabel(xlabel)
     ax_main.set_ylabel(ylabel)
-
-    # Título general de la figura (no se superpone al histograma superior)
-    fig.suptitle(f"Similarity: {metric_name.capitalize()}", y=0.95, fontsize=14)
+    fig.suptitle(f"Similarity: {metric_name.capitalize()}", y=0.98, fontsize=13)
 
     if invert:
         ax_main.invert_yaxis()
         ax_main.invert_xaxis()
-    ax_main.legend()
-    ax_main.grid(True)
 
+    # Leyenda: 2 columnas → 3 arriba / 2 abajo
+    ax_main.legend(
+        handles=legend_handles,
+        ncol=2,
+        loc='upper left',
+        framealpha=0.85,
+        edgecolor='#cccccc',
+        handlelength=1.8,
+        handletextpad=0.5,
+        labelspacing=0.3,
+        borderpad=0.5,
+    )
+
+    ax_main.grid(True, linewidth=0.4, alpha=0.5)
     ax_histx.set_yscale('log')
     ax_histy.set_xscale('log')
-
     plt.setp(ax_histx.get_xticklabels(), visible=False)
     plt.setp(ax_histy.get_yticklabels(), visible=False)
 
-    fig = plt.figure(constrained_layout=True)  # deja espacio para el título arriba
+    plt.tight_layout()
+    plt.savefig(f"similarity_{metric_name}.pdf", dpi=300, bbox_inches='tight')
     plt.show()
 
 # Ejecutar las gráficas optimizadas
