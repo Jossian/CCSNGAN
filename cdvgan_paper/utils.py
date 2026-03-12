@@ -170,7 +170,7 @@ def plot_examples_complete(data, classes, path):
         plt.tight_layout()
         
         # Guardar el plot
-        plt.savefig(f"{path}/class_{int(c)}_all_signals.png", dpi=100)
+        plt.savefig(f"{path}/class_{int(c)}_all_signals.eps", format='eps')
         plt.close()
 
 def plot_examples_5(data, classes, path):
