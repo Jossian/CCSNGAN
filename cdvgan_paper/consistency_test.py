@@ -436,7 +436,7 @@ def plot_cross_class_mmd(mmd_results, classes):
     im = ax.imshow(matrix, interpolation='nearest', cmap='RdYlGn')
 
     cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label(r'Cross-class MMD$^2$ (DTW + multi-scale RBF)', fontsize=10)
+    cbar.set_label(r'Cross-class MMD$^2$', fontsize=10)
     cbar.ax.tick_params(labelsize=9)
 
     vmin, vmax = matrix.min(), matrix.max()
