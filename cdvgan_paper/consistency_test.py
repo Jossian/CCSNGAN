@@ -179,15 +179,27 @@ def compute_dtw_distance_matrix(X, Y):
     print("✅ Matriz de distancias DTW completa.\n", flush=True)
     return dist_matrix
 
-def multi_scale_rbf_kernel(D, sigmas=[0.1, 1.0, 10.0]):
-    """Multi-scale RBF kernel from distance matrix"""
+    """def multi_scale_rbf_kernel(D, sigmas=[0.1, 1.0, 10.0]):
+    #Multi-scale RBF kernel from distance matrix
     print(f"🧮 Aplicando kernel RBF multi-escala con sigmas = {sigmas}", flush=True)
     K = np.zeros_like(D)
     for sigma in sigmas:
         print(f"  ➤ Procesando sigma = {sigma}", flush=True)
         K += np.exp(-D**2 / (2 * sigma**2))
     print("✅ Kernel RBF calculado.\n", flush=True)
-    return K
+    return K"""
+
+def multi_scale_rbf_kernel(D, sigmas=None):
+    """Calcula Kernel RBF adaptativo sobre la matriz de distancias DTW."""
+    # Si no se pasan sigmas, se usa el median trick
+    if sigmas is None:
+        median_dist = np.median(D[D > 0]) if np.any(D > 0) else 1.0
+        sigmas = [0.1 * median_dist, 1.0 * median_dist, 10.0 * median_dist]
+
+    K = np.zeros_like(D)
+    for sigma in sigmas:
+        K += np.exp(-(D**2) / (2 * (sigma**2)))
+    return K / len(sigmas)  # Normalizado entre 0 y 1
 
 def compute_mmd(K_xx, K_yy, K_xy):
     """Biased estimator of MMD^2"""
@@ -211,7 +223,8 @@ def plot_histograms(results,classes, bins=50):
     - results_hist 
     - bins: número de bins o lista de bins para los histogramas.
     - figsize: tamaño de la figura (ancho, alto).
-    - colors: lista de colores para los histogramas.
+    - colors:
+     lista de colores para los histogramas.
 
     """
     metric_names=['wasserstein', 'match', 'crosscov']
@@ -371,16 +384,42 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
         mmd_results['class_conditional'][c] = mmd
 
     # Cross-Class MMD
+    # --------- ⬇️ BLOQUE CORREGIDO MMD ⬇️ ----------
+    print("\n🔍 Calculando MMD usando DTW + multi-scale RBF...")
+    mmd_results = {"overall": None, "class_conditional": {}, "cross_class": {}}
+
+    # Pre-calcular matrices DTW intraclase para reutilizar en Cross-Class
+    D_dict = {}
+    for c in classes:
+        X_c = dataset_orig[label_orig == c]
+        if len(X_c) > 0:
+            D_dict[c] = compute_dtw_distance_matrix(X_c, X_c)
+
+    # Cross-Class MMD Real (Distancia MMD^2 entre clase i de Orig y clase j de Gen)
     for i in classes:
         for j in classes:
-            if i >= j: continue
             Xi = dataset_orig[label_orig == i]
             Yj = dataset_gen[labels_gen == j]
-            if len(Xi) < 2 or len(Yj) < 2: continue
-            D_ij = compute_dtw_distance_matrix(Xi, Yj)
-            K_ij = multi_scale_rbf_kernel(D_ij)
-            mmd_cross = np.mean(K_ij)
-            mmd_results['cross_class'][(i, j)] = mmd_cross
+
+            if len(Xi) < 2 or len(Yj) < 2:
+                continue
+
+            D_xx = D_dict[i] if i in D_dict else compute_dtw_distance_matrix(Xi, Xi)
+            D_yy = compute_dtw_distance_matrix(Yj, Yj)
+            D_xy = compute_dtw_distance_matrix(Xi, Yj)
+
+            # Ajuste adaptativo de sigma basado en todas las distancias
+            all_dists = np.concatenate([D_xx.ravel(), D_yy.ravel(), D_xy.ravel()])
+            med = np.median(all_dists[all_dists > 0]) if np.any(all_dists > 0) else 1.0
+            sigmas = [0.1 * med, 1.0 * med, 10.0 * med]
+
+            K_xx = multi_scale_rbf_kernel(D_xx, sigmas)
+            K_yy = multi_scale_rbf_kernel(D_yy, sigmas)
+            K_xy = multi_scale_rbf_kernel(D_xy, sigmas)
+
+            # MMD^2 estricto
+            mmd_val = compute_mmd(K_xx, K_yy, K_xy)
+            mmd_results["cross_class"][(i, j)] = mmd_val
     plot_class_conditional_mmd(mmd_results, classes)
     plot_cross_class_mmd(mmd_results, classes)
     """# 📊 Plots
