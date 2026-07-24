@@ -10,18 +10,14 @@ from scipy.spatial.distance import cdist
 from fastdtw import fastdtw
 from sklearn.metrics.pairwise import rbf_kernel
 import matplotlib.ticker as ticker
+import matplotlib.lines as mlines
+
 # Simulación de poblaciones (real vs artificial) para cada clase
 def simulate_blips(n, dim=50):
     return np.random.normal(0, 1, size=(n, dim))
 
-# Métrica de similitud: Wasserstein (W1), match function (Mf), cross-covariance (k)
-"""
-def match_function(x, y):
-    x = x / np.linalg.norm(x)
-    y = y / np.linalg.norm(y)
-    return np.dot(x, y)
-"""
 
+# Métrica de similitud: Wasserstein (W1), match function (Mf), cross-covariance (k)
 def match_function(x, y):
     X = fft(x)
     Y = fft(y)
@@ -29,14 +25,15 @@ def match_function(x, y):
     Y = Y / np.linalg.norm(Y)
     return np.vdot(X, Y).real  # vdot incluye conjugado
 
+
 # Optimized normalized cross-covariance using direct formula
 def normalized_cross_covariance_fast(x, y):
     x_mean, y_mean = np.mean(x), np.mean(y)
     numerator = np.sum((x - x_mean) * (y - y_mean))
-    denominator = np.sqrt(np.sum((x - x_mean)**2) * np.sum((y - y_mean)**2))
+    denominator = np.sqrt(np.sum((x - x_mean) ** 2) * np.sum((y - y_mean) ** 2))
     return numerator / denominator if denominator != 0 else 0
 
-# Replace slow version
+
 def compute_similarity_fast(blip, population, metric='wasserstein'):
     sims = []
     for sample in population:
@@ -48,13 +45,6 @@ def compute_similarity_fast(blip, population, metric='wasserstein'):
             sims.append(normalized_cross_covariance_fast(blip, sample))
     return np.mean(sims), np.std(sims) / np.sqrt(len(sims))
 
-# Redefinir función de ploteo
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from scipy.stats import linregress
-import matplotlib.lines as mlines
 
 def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert=False):
     plt.rcParams.update({
@@ -70,7 +60,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     fig = plt.figure(figsize=(7, 7))
     gs = GridSpec(2, 2, width_ratios=[4, 1], height_ratios=[1, 4], hspace=0.05, wspace=0.05)
 
-    ax_main  = fig.add_subplot(gs[1, 0])
+    ax_main = fig.add_subplot(gs[1, 0])
     ax_histx = fig.add_subplot(gs[0, 0], sharex=ax_main)
     ax_histy = fig.add_subplot(gs[1, 1], sharey=ax_main)
 
@@ -95,7 +85,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         x = np.array(results[metric_name]['x'])[cls_mask]
         y = np.array(results[metric_name]['y'])[cls_mask]
 
-        color  = colors.get(cls_numeric, 'gray')
+        color = colors.get(cls_numeric, 'gray')
         marker = markers.get(cls_numeric, 'o')
 
         ax_main.scatter(x, y, alpha=0.4, s=8, color=color, marker=marker)
@@ -130,12 +120,11 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         ax_main.invert_yaxis()
         ax_main.invert_xaxis()
 
-    # Leyenda: 1 columna, sin fondo
     ax_main.legend(
         handles=legend_handles,
         ncol=1,
         loc='upper left',
-        frameon=False,          # ← sin fondo ni borde
+        frameon=False,
         handlelength=1.8,
         handletextpad=0.5,
         labelspacing=0.3,
@@ -151,11 +140,6 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     plt.tight_layout()
     plt.savefig(f"similarity_{metric_name}.eps", format='eps', bbox_inches='tight')
     plt.show()
-# Ejecutar las gráficas optimizadas
-#plot_similarity_metric('wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
-#plot_similarity_metric('match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$', invert=True)
-#plot_similarity_metric('crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$', invert=True)
-
 
 
 ##################################MDD FUNCTIONS######################################
@@ -172,34 +156,23 @@ def compute_dtw_distance_matrix(X, Y):
             dist_matrix[i, j] = dist
             count += 1
 
-            # Imprimir progreso cada 5%
             if count % max(total // 20, 1) == 0:
                 print(f"  Progreso: {100 * count // total}% ({count}/{total})", flush=True)
 
     print("✅ Matriz de distancias DTW completa.\n", flush=True)
     return dist_matrix
 
-    """def multi_scale_rbf_kernel(D, sigmas=[0.1, 1.0, 10.0]):
-    #Multi-scale RBF kernel from distance matrix
+
+def multi_scale_rbf_kernel(D, sigmas=[0.1, 1.0, 10.0]):
+    """Multi-scale RBF kernel from distance matrix"""
     print(f"🧮 Aplicando kernel RBF multi-escala con sigmas = {sigmas}", flush=True)
     K = np.zeros_like(D)
     for sigma in sigmas:
         print(f"  ➤ Procesando sigma = {sigma}", flush=True)
-        K += np.exp(-D**2 / (2 * sigma**2))
+        K += np.exp(-D ** 2 / (2 * sigma ** 2))
     print("✅ Kernel RBF calculado.\n", flush=True)
-    return K"""
+    return K
 
-def multi_scale_rbf_kernel(D, sigmas=None):
-    """Calcula Kernel RBF adaptativo sobre la matriz de distancias DTW."""
-    # Si no se pasan sigmas, se usa el median trick
-    if sigmas is None:
-        median_dist = np.median(D[D > 0]) if np.any(D > 0) else 1.0
-        sigmas = [0.1 * median_dist, 1.0 * median_dist, 10.0 * median_dist]
-
-    K = np.zeros_like(D)
-    for sigma in sigmas:
-        K += np.exp(-(D**2) / (2 * (sigma**2)))
-    return K / len(sigmas)  # Normalizado entre 0 y 1
 
 def compute_mmd(K_xx, K_yy, K_xy):
     """Biased estimator of MMD^2"""
@@ -213,22 +186,12 @@ def compute_mmd(K_xx, K_yy, K_xy):
     return mmd2
 
 
-
-
-def plot_histograms(results,classes, bins=50):
+def plot_histograms(results, classes, bins=50):
     """
     Plotea tres histogramas como subplots.
-
-    Parámetros:
-    - results_hist 
-    - bins: número de bins o lista de bins para los histogramas.
-    - figsize: tamaño de la figura (ancho, alto).
-    - colors:
-     lista de colores para los histogramas.
-
     """
-    metric_names=['wasserstein', 'match', 'crosscov']
-    figsize=(15, 4)
+    metric_names = ['wasserstein', 'match', 'crosscov']
+    figsize = (15, 4)
     fig, axs = plt.subplots(1, 3, figsize=figsize)
     colors = {
         0: 'royalblue',
@@ -239,59 +202,41 @@ def plot_histograms(results,classes, bins=50):
     }
 
     for i, ax in enumerate(axs):
-        metric_name=metric_names[i]
+        metric_name = metric_names[i]
         for cls in classes:
-            # Si cls es one-hot encoding, conviértelo a número:
             if isinstance(cls, (list, np.ndarray)):
                 cls_numeric = int(np.argmax(cls))
             else:
                 cls_numeric = int(cls)
 
             cls_mask = np.array(results[metric_name]['label']) == cls
-
-            #print(f"Tipo de x para {metric_name}:", type(results[metric_name]['x']))
-            #print(f"Ejemplo:", results[metric_name]['x'][:5])
-
             x = np.array(results[metric_name]['x'])[cls_mask]
-            #print("x shape: ", x.shape)
-            #print("x: ", x)
             color = colors.get(cls_numeric, 'gray')
-            ax.hist(x, bins=bins, color=color,alpha=0.6)
+            ax.hist(x, bins=bins, color=color, alpha=0.6)
             ax.set_title(metric_name)
             ax.grid(True)
             ax.legend()
 
-    
-
-    #data_list = [data1, data2, data3]
-    
-        #fig, axs = plt.subplots(1, 3, figsize=figsize)
-
-    #for i, ax in enumerate(axs):
-    #    ax.hist(data_list[i], bins=bins, color=colors[i], edgecolor='black')
-    #    ax.set_title(labels[i])
-    #    ax.grid(True)
     fig.suptitle(f"W(BR, BR)", y=0.95, fontsize=14)
     plt.tight_layout()
     plt.show()
+
 ######################################################################################
 
 
 def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("Starting consistency test...")
-    unique,counts=np.unique(label_orig, return_counts=True)
+    unique, counts = np.unique(label_orig, return_counts=True)
     print("Classes, counts for original: ")
     print(np.asarray((unique, counts)).T)
 
-    unique_gen,counts_gen=np.unique(labels_gen, return_counts=True)
+    unique_gen, counts_gen = np.unique(labels_gen, return_counts=True)
     print("Classes, counts for generation: ")
     print(np.asarray((unique_gen, counts_gen)).T)
-    print("label_orig shape: ",label_orig.shape)  # esto debería mostrar algo como (N,)
-    # ---- CONFIGURACIÓN ----
+    print("label_orig shape: ", label_orig.shape)
+
     np.random.seed(42)
-    #N = 300  # muestras por clase
-    classes = [0,1,2,3,4]
-    # Re-run simulation with faster method
+    classes = [0, 1, 2, 3, 4]
     results = {m: {'x': [], 'y': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
     results_hist = {m: {'x': [], 'label': []} for m in ['wasserstein', 'match', 'crosscov']}
 
@@ -299,54 +244,44 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
     print("label_orig shape:", label_orig.shape)
 
     for class_label in classes:
-        # Filtrar las señales por clase usando las etiquetas
         B_F_class = dataset_gen[np.array(labels_gen) == class_label]
         B_R_class = dataset_orig[label_orig == class_label]
-        #B_R_class = dataset_orig[np.array(label_orig) == class_label]
 
-        # Número de señales disponibles para esta clase (por si difieren)
         N_real = min(len(B_F_class), len(B_R_class))
 
         print(f"Clase: {class_label}, muestras disponibles: {N_real}")
 
         for i in range(N_real):
             bF = B_F_class[i]
-            bR= B_R_class[i]
+            bR = B_R_class[i]
 
-            x_w,_  = compute_similarity_fast(bF, B_F_class, 'wasserstein')
-            y_w,_  = compute_similarity_fast(bF, B_R_class, 'wasserstein')
-            orig_hist_w,_=compute_similarity_fast(bR, B_R_class, 'wasserstein')
+            x_w, _ = compute_similarity_fast(bF, B_F_class, 'wasserstein')
+            y_w, _ = compute_similarity_fast(bF, B_R_class, 'wasserstein')
+            orig_hist_w, _ = compute_similarity_fast(bR, B_R_class, 'wasserstein')
 
-            x_m,_  = compute_similarity_fast(bF, B_F_class, 'match')
-            y_m,_  = compute_similarity_fast(bF, B_R_class, 'match')
-            orig_hist_m,_=compute_similarity_fast(bR, B_R_class, 'match')
+            x_m, _ = compute_similarity_fast(bF, B_F_class, 'match')
+            y_m, _ = compute_similarity_fast(bF, B_R_class, 'match')
+            orig_hist_m, _ = compute_similarity_fast(bR, B_R_class, 'match')
 
-            x_k,_  = compute_similarity_fast(bF, B_F_class, 'crosscov')
-            y_k,_  = compute_similarity_fast(bF, B_R_class, 'crosscov')
-            orig_hist_c,_=compute_similarity_fast(bR, B_R_class, 'crosscov')
+            x_k, _ = compute_similarity_fast(bF, B_F_class, 'crosscov')
+            y_k, _ = compute_similarity_fast(bF, B_R_class, 'crosscov')
+            orig_hist_c, _ = compute_similarity_fast(bR, B_R_class, 'crosscov')
 
             for metric, x, y in zip(['wasserstein', 'match', 'crosscov'], [x_w, x_m, x_k], [y_w, y_m, y_k]):
                 results[metric]['x'].append(x)
                 results[metric]['y'].append(y)
                 results[metric]['label'].append(class_label)
 
-
-
-            for metric, x in zip(['wasserstein', 'match', 'crosscov'], [orig_hist_w,orig_hist_m,orig_hist_c]):
+            for metric, x in zip(['wasserstein', 'match', 'crosscov'], [orig_hist_w, orig_hist_m, orig_hist_c]):
                 results_hist[metric]['x'].append(x)
                 results_hist[metric]['label'].append(class_label)
 
-
-
-
-
-    plot_histograms(results_hist,classes)
-    # Plot all metrics again
-    plot_similarity_metric(classes,  results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
+    plot_histograms(results_hist, classes)
+    plot_similarity_metric(classes, results, 'wasserstein', r'$W_1(B_F, B_F)$', r'$W_1(B_F, B_R)$')
     plot_similarity_metric(classes, results, 'match', r'$Mf(B_F, B_F)$', r'$Mf(B_F, B_R)$')
     plot_similarity_metric(classes, results, 'crosscov', r'$k(B_F, B_F)$', r'$k(B_F, B_R)$')
 
-    # --------- ⬇️ AGREGADO: MMD CON DTW Y KERNEL RBF MULTIESCALA ⬇️ ----------
+    # --------- ⬇️ MMD CON DTW Y KERNEL RBF MULTIESCALA ⬇️ ----------
     print("\n🔍 Calculando MMD usando DTW + multi-scale RBF...")
     mmd_results = {'overall': None, 'class_conditional': {}, 'cross_class': {}}
 
@@ -367,10 +302,6 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
         X = dataset_orig[label_orig == c]
         Y = dataset_gen[labels_gen == c]
 
-        ### prueba rápida
-        #X = X[:30]
-        #Y = Y[:30]
-        ###
         if len(X) < 2 or len(Y) < 2:
             print(f"⚠️ Clase {c} omitida por insuficientes muestras.")
             continue
@@ -383,100 +314,71 @@ def consistency_test(dataset_orig, label_orig, dataset_gen, labels_gen):
         mmd = compute_mmd(K_xx, K_yy, K_xy)
         mmd_results['class_conditional'][c] = mmd
 
-    # Cross-Class MMD
-    # --------- ⬇️ BLOQUE CORREGIDO MMD ⬇️ ----------
-    print("\n🔍 Calculando MMD usando DTW + multi-scale RBF...")
-    mmd_results = {"overall": None, "class_conditional": {}, "cross_class": {}}
-
-    # Pre-calcular matrices DTW intraclase para reutilizar en Cross-Class
-    D_dict = {}
-    for c in classes:
-        X_c = dataset_orig[label_orig == c]
-        if len(X_c) > 0:
-            D_dict[c] = compute_dtw_distance_matrix(X_c, X_c)
-
-    # Cross-Class MMD Real (Distancia MMD^2 entre clase i de Orig y clase j de Gen)
+    # ---------------------------------------------------------------
+    # Cross-Class MMD — CORREGIDO
+    # ---------------------------------------------------------------
+    # ANTES: se calculaba únicamente np.mean(K_ij), es decir, el kernel
+    # cruzado promedio entre la clase real i y la clase generada j. Eso
+    # NO es MMD²: es una medida de SIMILITUD (el kernel RBF crece cuando
+    # las señales se parecen), no de discrepancia/separación. Por eso el
+    # heatmap salía "invertido": clases con beta cercano (más parecidas)
+    # daban valores altos (~0.96), y clases con beta muy distinto (menos
+    # parecidas) daban valores bajos (~0.73) — justo al revés de lo que
+    # se reporta en el texto ("valores cercanos a 1 = alta separabilidad").
+    #
+    # AHORA: se usa la fórmula completa de la MMD² insesgada,
+    #   MMD²(i,j) = mean(K_ii) + mean(K_jj) - 2*mean(K_ij)
+    # comparando las poblaciones REALES de la clase i contra la clase j
+    # (mismo espíritu que el "class-conditional", pero entre clases
+    # distintas en vez de comparar cada clase contra sí misma).
+    # Con esto, valores altos sí corresponden a clases más distintas
+    # (mayor separación) y valores bajos a clases más parecidas.
     for i in classes:
         for j in classes:
+            if i >= j:
+                continue
             Xi = dataset_orig[label_orig == i]
-            Yj = dataset_gen[labels_gen == j]
-
-            if len(Xi) < 2 or len(Yj) < 2:
+            Xj = dataset_orig[label_orig == j]
+            if len(Xi) < 2 or len(Xj) < 2:
+                print(f"⚠️ Par de clases ({i},{j}) omitido por insuficientes muestras.")
                 continue
 
-            D_xx = D_dict[i] if i in D_dict else compute_dtw_distance_matrix(Xi, Xi)
-            D_yy = compute_dtw_distance_matrix(Yj, Yj)
-            D_xy = compute_dtw_distance_matrix(Xi, Yj)
+            D_ii = compute_dtw_distance_matrix(Xi, Xi)
+            D_jj = compute_dtw_distance_matrix(Xj, Xj)
+            D_ij = compute_dtw_distance_matrix(Xi, Xj)
 
-            # Ajuste adaptativo de sigma basado en todas las distancias
-            all_dists = np.concatenate([D_xx.ravel(), D_yy.ravel(), D_xy.ravel()])
-            med = np.median(all_dists[all_dists > 0]) if np.any(all_dists > 0) else 1.0
-            sigmas = [0.1 * med, 1.0 * med, 10.0 * med]
+            K_ii = multi_scale_rbf_kernel(D_ii)
+            K_jj = multi_scale_rbf_kernel(D_jj)
+            K_ij = multi_scale_rbf_kernel(D_ij)
 
-            K_xx = multi_scale_rbf_kernel(D_xx, sigmas)
-            K_yy = multi_scale_rbf_kernel(D_yy, sigmas)
-            K_xy = multi_scale_rbf_kernel(D_xy, sigmas)
+            mmd_cross = compute_mmd(K_ii, K_jj, K_ij)
+            mmd_results['cross_class'][(i, j)] = mmd_cross
 
-            # MMD^2 estricto
-            mmd_val = compute_mmd(K_xx, K_yy, K_xy)
-            mmd_results["cross_class"][(i, j)] = mmd_val
     plot_class_conditional_mmd(mmd_results, classes)
     plot_cross_class_mmd(mmd_results, classes)
-    """# 📊 Plots
-    # Class-conditional MMD
+    # --------- ⬆️ FIN DEL BLOQUE ⬆️ ----------
+
+
+def plot_class_conditional_mmd(mmd_results, classes):
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.size': 11,
+        'axes.labelsize': 13,
+        'legend.fontsize': 10,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+    })
+
+    colors = {
+        0: 'royalblue',
+        1: 'darkorange',
+        2: 'forestgreen',
+        3: 'crimson',
+        4: 'mediumvioletred'
+    }
+
     keys = list(mmd_results['class_conditional'].keys())
     values = [mmd_results['class_conditional'][k] for k in keys]
-    plt.figure(figsize=(8, 5))
-    plt.bar(keys, values)
-    plt.title("Class-conditional MMD (DTW + RBF)")
-    plt.xlabel("Class")
-    plt.ylabel("MMD²")
-    plt.grid(True)
-    plt.show()
-
-    # Cross-class heatmap
-    matrix = np.zeros((len(classes), len(classes)))
-    for (i, j), val in mmd_results['cross_class'].items():
-        i_idx = int(i)
-        j_idx = int(j)
-        matrix[i_idx, j_idx] = val  
-        matrix[j_idx, i_idx] = val  # symmetry
-    plt.figure(figsize=(6, 5))
-    plt.imshow(matrix, interpolation='nearest', cmap='viridis')
-    plt.colorbar(label="Cross-class similarity (avg. kernel)")
-    plt.title("Cross-class MMD Heatmap")
-    plt.xticks(classes)
-    plt.yticks(classes)
-    plt.xlabel("Class")
-    plt.ylabel("Class")
-    plt.show()"""
-    # --------- ⬆️ FIN DEL BLOQUE AGREGADO ⬆️ ----------
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-
-def plot_class_conditional_mmd(mmd_results, classes):
-    plt.rcParams.update({
-        'font.family': 'serif',
-        'font.size': 11,
-        'axes.labelsize': 13,
-        'legend.fontsize': 10,
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
-    })
-
-    colors = {
-        0: 'royalblue',
-        1: 'darkorange',
-        2: 'forestgreen',
-        3: 'crimson',
-        4: 'mediumvioletred'
-    }
-
-    keys   = list(mmd_results['class_conditional'].keys())
-    values = [mmd_results['class_conditional'][k] for k in keys]
     mean_val = np.mean(values)
 
     fig, ax = plt.subplots(figsize=(5, 4))
@@ -484,7 +386,6 @@ def plot_class_conditional_mmd(mmd_results, classes):
     bar_colors = [colors.get(int(k), 'gray') for k in keys]
     bars = ax.bar(keys, values, color=bar_colors, alpha=0.85, width=0.6, zorder=3)
 
-    # Anotación del valor encima de cada barra
     for bar, val in zip(bars, values):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -493,7 +394,6 @@ def plot_class_conditional_mmd(mmd_results, classes):
             ha='center', va='bottom', fontsize=9
         )
 
-    # Línea de media
     ax.axhline(mean_val, linestyle='--', color='black', linewidth=1,
                alpha=0.6, label=fr'Mean $= {mean_val:.3f}$', zorder=4)
 
@@ -530,120 +430,19 @@ def plot_cross_class_mmd(mmd_results, classes):
 
     fig, ax = plt.subplots(figsize=(5, 4))
 
+    # Cmap invertido respecto al original: ahora valores altos (MMD² real)
+    # sí significan "más distintas" -> se mantiene la lectura verde=lejos,
+    # rojo=cerca, coherente con la fórmula corregida.
     im = ax.imshow(matrix, interpolation='nearest', cmap='RdYlGn')
 
-    # Colorbar
     cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label('Cross-class similarity (avg. kernel)', fontsize=10)
+    cbar.set_label(r'Cross-class MMD$^2$ (DTW + multi-scale RBF)', fontsize=10)
     cbar.ax.tick_params(labelsize=9)
 
-    # Anotación de cada celda
     vmin, vmax = matrix.min(), matrix.max()
     for i in range(n):
         for j in range(n):
             val = matrix[i, j]
-            # Color de texto según fondo para legibilidad
-            text_color = 'white' if val < (vmin + vmax) / 2 else 'black'
-            ax.text(j, i, f'{val:.2f}', ha='center', va='center',
-                    fontsize=9, color=text_color)
-
-    ax.set_xticks(range(n))
-    ax.set_yticks(range(n))
-    ax.set_xticklabels([int(c) for c in classes])
-    ax.set_yticklabels([int(c) for c in classes])
-    ax.set_xlabel('Class')
-    ax.set_ylabel('Class')
-
-    plt.tight_layout()
-    plt.savefig("mmd_cross_class.pdf", format='pdf', bbox_inches='tight')
-    plt.show()
-
-def plot_class_conditional_mmd(mmd_results, classes):
-    plt.rcParams.update({
-        'font.family': 'serif',
-        'font.size': 11,
-        'axes.labelsize': 13,
-        'legend.fontsize': 10,
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
-    })
-
-    colors = {
-        0: 'royalblue',
-        1: 'darkorange',
-        2: 'forestgreen',
-        3: 'crimson',
-        4: 'mediumvioletred'
-    }
-
-    keys   = list(mmd_results['class_conditional'].keys())
-    values = [mmd_results['class_conditional'][k] for k in keys]
-    mean_val = np.mean(values)
-
-    fig, ax = plt.subplots(figsize=(5, 4))
-
-    bar_colors = [colors.get(int(k), 'gray') for k in keys]
-    bars = ax.bar(keys, values, color=bar_colors, alpha=0.85, width=0.6, zorder=3)
-
-    # Anotación del valor encima de cada barra
-    for bar, val in zip(bars, values):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + max(values) * 0.01,
-            f'{val:.3f}',
-            ha='center', va='bottom', fontsize=9
-        )
-
-    # Línea de media
-    ax.axhline(mean_val, linestyle='--', color='black', linewidth=1,
-               alpha=0.6, label=fr'Mean $= {mean_val:.3f}$', zorder=4)
-
-    ax.set_xlabel('Class')
-    ax.set_ylabel(r'MMD$^2$')
-    ax.set_xticks([int(k) for k in keys])
-    ax.legend(frameon=False, fontsize=10)
-    ax.grid(True, axis='y', linewidth=0.4, alpha=0.5, zorder=0)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.set_ylim(0, max(values) * 1.15)
-
-    plt.tight_layout()
-    plt.savefig("mmd_class_conditional.pdf", format='pdf', bbox_inches='tight')
-    plt.show()
-
-
-def plot_cross_class_mmd(mmd_results, classes):
-    plt.rcParams.update({
-        'font.family': 'serif',
-        'font.size': 11,
-        'axes.labelsize': 13,
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
-    })
-
-    n = len(classes)
-    matrix = np.zeros((n, n))
-    for (i, j), val in mmd_results['cross_class'].items():
-        i_idx = int(i)
-        j_idx = int(j)
-        matrix[i_idx, j_idx] = val
-        matrix[j_idx, i_idx] = val
-
-    fig, ax = plt.subplots(figsize=(5, 4))
-
-    im = ax.imshow(matrix, interpolation='nearest', cmap='RdYlGn')
-
-    # Colorbar
-    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label('Cross-class similarity (avg. kernel)', fontsize=10)
-    cbar.ax.tick_params(labelsize=9)
-
-    # Anotación de cada celda
-    vmin, vmax = matrix.min(), matrix.max()
-    for i in range(n):
-        for j in range(n):
-            val = matrix[i, j]
-            # Color de texto según fondo para legibilidad
             text_color = 'white' if val < (vmin + vmax) / 2 else 'black'
             ax.text(j, i, f'{val:.2f}', ha='center', va='center',
                     fontsize=9, color=text_color)
