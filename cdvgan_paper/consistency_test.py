@@ -52,7 +52,7 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         'text.usetex': False,
         'font.size': 11,
         'axes.labelsize': 13,
-        'legend.fontsize': 11,
+        'legend.fontsize': 10,
         'xtick.labelsize': 10,
         'ytick.labelsize': 10,
     })
@@ -89,16 +89,21 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         marker = markers.get(cls_numeric, 'o')
 
         ax_main.scatter(x, y, alpha=0.4, s=8, color=color, marker=marker)
-        print("DEBUG SHAPES", metric_name, "x:", np.array(x).shape, "y:", np.array(y).shape)
 
-        slope, intercept, *_ = linregress(x, y)
+        # Unpack rvalue from linregress
+        slope, intercept, r_value, p_value, std_err = linregress(x, y)
         x_line = np.linspace(min(x), max(x), 100)
         ax_main.plot(x_line, slope * x_line + intercept, color=color, linewidth=1.5)
 
+        # Format sign for linear equation cleanly (+ vs -)
+        sign = "+" if intercept >= 0 else "-"
+        abs_intercept = abs(intercept)
+
+        # Include r in the legend string
         handle = mlines.Line2D(
             [], [], color=color, linewidth=1.8,
             marker=marker, markersize=4,
-            label=fr"{cls_numeric}: $y = {slope:.2f}x + {intercept:.2f}$"
+            label=fr"{cls_numeric}: $y = {slope:.2f}x {sign} {abs_intercept:.2f}$, $r = {r_value:.2f}$"
         )
         legend_handles.append(handle)
 
@@ -112,9 +117,9 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
         ax_histy.axhline(y_mean - 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
         ax_histy.axhline(y_mean + 6 * y_std, linestyle='--', color=color, alpha=0.7, linewidth=0.9)
 
-    # Ejes con notación LaTeX del paper
-    ax_main.set_xlabel(r"$m(\mathcal{D}_{gen}^{(k)}, \mathcal{D}_{gen}^{(k)})$")
-    ax_main.set_ylabel(r"$m(\mathcal{D}_{gen}^{(k)}, \mathcal{D}^{(k)})$")
+    # Use the passed xlabel and ylabel strings
+    ax_main.set_xlabel(xlabel)
+    ax_main.set_ylabel(ylabel)
 
     if invert:
         ax_main.invert_yaxis()
@@ -140,8 +145,6 @@ def plot_similarity_metric(classes, results, metric_name, xlabel, ylabel, invert
     plt.tight_layout()
     plt.savefig(f"similarity_{metric_name}.eps", format='eps', bbox_inches='tight')
     plt.show()
-
-
 ##################################MDD FUNCTIONS######################################
 
 def compute_dtw_distance_matrix(X, Y):

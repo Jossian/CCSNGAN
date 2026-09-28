@@ -1,79 +1,63 @@
-# Imports.
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-import sys
+import pandas as pd
 from pathlib import Path
+import time
 
-ruta_actual = Path(__file__).resolve()
-ruta_proyecto = ruta_actual.parents[0]
-if str(ruta_proyecto) not in sys.path:
-    sys.path.insert(0, str(ruta_proyecto))
+ruta_proyecto = Path(__file__).resolve().parents[0]
 
-from .consistency_test import consistency_test
-from .utils import plot_pca_3d
-
-# ---------------------------------------------------------------------------
-# Mismos parámetros que en main.py — deben coincidir EXACTAMENTE con los que
-# se usaron para entrenar el generator.keras que vas a cargar (sobre todo
-# noise_dim y num_classes/depth; si no coinciden, el generador va a fallar
-# al recibir el input o va a generar basura silenciosamente).
-# ---------------------------------------------------------------------------
+# Deben coincidir EXACTAMENTE con los usados al entrenar
 noise_dim = 100
 num_classes = 5
 depth = num_classes
 
-# ---------------------------------------------------------------------------
-# Ruta al generador ya entrenado. Ajusta al que quieras evaluar:
-#   - gan_exp_dir/<gan_choice>.keras   (el que guarda main.py al final)
-#   - output_path/Generator.keras      (la copia dentro de GAN_outputs/<variant>/)
-# ---------------------------------------------------------------------------
-generator_path = f"{ruta_proyecto}/Generator.keras"  # <-- ajusta
-
+generator_path = f"{ruta_proyecto}/Generator.keras"
 generator = keras.models.load_model(generator_path)
 print(f"Generador cargado desde: {generator_path}")
-print("Input shape esperado por el generador:", generator.input_shape)
+print("Input shape esperado:", generator.input_shape)
 
-# ---------------------------------------------------------------------------
-# Cargar el dataset REAL de test (el mismo que usa main.py para comparar) —
-# esto NO es entrenamiento, solo carga de datos para la comparación.
-# ---------------------------------------------------------------------------
-data_orig = np.loadtxt(f"{ruta_proyecto}/data/corrected/ConditionalSignals_test.csv", delimiter=",")
-class_array_orig = np.loadtxt(f"{ruta_proyecto}/data/corrected/ConditionalLabels_test.csv", delimiter=",")
-class_array_orig = class_array_orig - 1
+n_test = 10
+fs_gan = 4096  # sampling rate al que generaste (según lo que confirmaste)
 
-unique, counts_orig = np.unique(class_array_orig, return_counts=True)
-print("Classes, counts (test real): ")
-print(np.asarray((unique, counts_orig)).T)
+# Clases distribuidas ciclicamente entre las 5 clases para el set de prueba
+labels = np.array([i % num_classes for i in range(n_test)])
+vertex_classes = tf.one_hot(labels, depth, on_value=1.0, off_value=0.0, axis=-1)
+latent_vectors = tf.random.normal(shape=(n_test, noise_dim))
 
-# ---------------------------------------------------------------------------
-# Armar las mismas clases one-hot y el mismo número de señales por clase que
-# el dataset real de test, para que la comparación sea apples-to-apples.
-# ---------------------------------------------------------------------------
-num_signals_datasets = np.sum(counts_orig)
+t0 = time.time()
+generations = generator([latent_vectors, vertex_classes])
+generations = generations.numpy()
+elapsed = time.time() - t0
+print(f"Generadas {n_test} señales en {elapsed:.4f} s "
+      f"({elapsed/n_test:.5f} s/señal — esto NO es el tiempo de PE, solo del generador)")
+print("Shape crudo del generador:", generations.shape)
 
-labels = np.concatenate([
-    np.full(n, class_idx) for class_idx, n in enumerate(counts_orig)
-])
+# El generador puede devolver (n, N) o (n, N, 1) según cómo esté armada la
+# última capa — squeeze para dejarlo en (n_test, n_samples)
+generations = np.squeeze(generations)
+if generations.ndim == 1:
+    generations = generations[np.newaxis, :]
 
-vertex_classes_datasets = tf.one_hot(labels, depth, on_value=1.0, off_value=0.0, axis=-1)
+n_samples = generations.shape[1]
 
-# ---------------------------------------------------------------------------
-# Generar directamente con el generador cargado — sin fit_GAN, sin GANMonitor,
-# sin discriminadores. Esto es exactamente lo que hacía main.py al final,
-# solo que usando el generador ya entrenado en vez de gan.generator recién
-# salido de fit_GAN.
-# ---------------------------------------------------------------------------
-latent_vectors_vertex = tf.random.normal(shape=(num_signals_datasets, noise_dim))
+# Vector de tiempo en ms, centrado en 0 (asumiendo bounce en el centro de la
+# ventana, misma convención que Abylkairov_catalog.csv). Si tu GAN entrena
+# con el bounce en otra posición del vector, ajusta el offset aquí.
+t_ms = (np.arange(n_samples) - n_samples // 2) / fs_gan * 1000.0
 
-generations_vertex = generator([latent_vectors_vertex, vertex_classes_datasets])
-generations_vertex = generations_vertex.numpy()
+rows = []
+for s in range(n_test):
+    for i in range(n_samples):
+        rows.append({
+            'sample_id': s,
+            't(ms)': t_ms[i],
+            'amplitude': generations[s, i],
+            'class': labels[s],  # columna extra, load_gan_signals la ignora
+        })
 
-print("Señales generadas:", generations_vertex.shape)
-
-# ---------------------------------------------------------------------------
-# Cross MMD / consistency test — igual que en main.py.
-# ---------------------------------------------------------------------------
-consistency_test(data_orig, class_array_orig, generations_vertex, labels)
-
-plot_pca_3d(generations_vertex, labels)
+df = pd.DataFrame(rows)
+out_path = ruta_proyecto / 'data' / 'gan_signals_test10.csv'
+out_path.parent.mkdir(parents=True, exist_ok=True)
+df.to_csv(out_path, index=False)
+print(f"Guardado en: {out_path}  ({n_test} señales x {n_samples} muestras)")
