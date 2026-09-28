@@ -39,9 +39,7 @@ gan_choice = gan_choice_dict[gan_choice_int]
 output_dir = f'{ruta_proyecto}/GAN_outputs/'
 output_path = output_dir + gan_choice
 
-generator_path = output_path + '/Generator.keras'
-generator = keras.models.load_model("Generator.keras")
-print(f"Generador cargado desde: Generator.keras")
+generator = keras.models.load_model(f'{ruta_proyecto}/Generator.keras')
 print("Input shape esperado:", generator.input_shape)
 
 # ------------------------------------------------------------------
