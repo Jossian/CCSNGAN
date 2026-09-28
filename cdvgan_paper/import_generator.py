@@ -41,7 +41,7 @@ output_path = output_dir + gan_choice
 
 generator_path = output_path + '/Generator.keras'
 generator = keras.models.load_model("Generator.keras")
-print(f"Generador cargado desde: {"Generator.keras"}")
+print(f"Generador cargado desde: Generator.keras")
 print("Input shape esperado:", generator.input_shape)
 
 # ------------------------------------------------------------------
