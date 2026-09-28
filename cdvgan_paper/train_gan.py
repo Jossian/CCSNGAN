@@ -77,11 +77,11 @@ unique,counts_orig=np.unique(class_array_orig, return_counts=True)
 COLS_TO_LOAD = ["beta1_IC_b", "tbounce_s", "t_postbounce"]
 
 # 1. Load the CSV into a temporary Pandas DataFrame, only reading the necessary columns.
-labels_df_temp = pd.read_csv(f'{ruta_proyecto}/data/labels.csv', usecols=COLS_TO_LOAD)
+#labels_df_temp = pd.read_csv(f'{ruta_proyecto}/data/labels.csv', usecols=COLS_TO_LOAD)
 
 # 2. Convert the DataFrame (including the NaNs converted by Pandas) into a NumPy array.
 # The NaNs will now be stored as valid numpy.nan float values.
-parameters = labels_df_temp.values 
+#parameters = labels_df_temp.values 
 
 
 #signals_richers=np.loadtxt(f'{ruta_proyecto}/data/signals_preprocessed.csv', delimiter=',',skiprows=1)
